@@ -1,4 +1,4 @@
-package com.msd.Robot
+package com.msd
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
