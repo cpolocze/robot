@@ -1,8 +1,8 @@
-package com.msd.Robot
+package com.msd.robot
 
-import com.msd.Robot.domain.UpgradeException
-import com.msd.Robot.domain.Robot
-import com.msd.Robot.domain.UpgradeType
+import com.msd.robot.domain.UpgradeException
+import com.msd.robot.domain.Robot
+import com.msd.robot.domain.UpgradeType
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach

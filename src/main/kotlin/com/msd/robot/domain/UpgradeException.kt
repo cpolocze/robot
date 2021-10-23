@@ -1,4 +1,4 @@
-package com.msd.Robot.domain
+package com.msd.robot.domain
 
 import java.lang.RuntimeException
 
