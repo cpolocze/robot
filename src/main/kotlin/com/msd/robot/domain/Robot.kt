@@ -8,10 +8,13 @@ import javax.persistence.Id
 
 @Entity
 class Robot(
-        val player: UUID,
+    val player: UUID,
 ) {
     @Id
     val id: UUID = UUID.randomUUID()
+
+    //TODO potentially replace planet through a class, move planet into constructor
+    var planet: UUID = UUID.randomUUID()
 
     var maxHealth: Int = maxHealthByLevel[0]
         private set
@@ -24,12 +27,14 @@ class Robot(
     val maxEnergy
         get() = maxEnergyByLevel[energyLevel]
 
+    val energyRegen
+        get() = maxEnergyByLevel[energyLevel]
+
     var energy: Int = maxEnergy
         private set
 
     val attackDamage: Int
         get() = attackDamageByLevel[damageLevel]
-
 
     var storageLevel: Int = 0
         private set
@@ -41,13 +46,17 @@ class Robot(
         private set(value) {
             if (value > 5) throw UpgradeException("Max Damage Level has been reached. Upgrade not possible.")
             else if (value > damageLevel + 1)
-                throw UpgradeException("Cannot skip upgrade levels. " +
-                        "Tried to upgrade from level $damageLevel to level $value")
+                throw UpgradeException(
+                    "Cannot skip upgrade levels. " +
+                            "Tried to upgrade from level $damageLevel to level $value"
+                )
             else if (value <= damageLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $damageLevel to level $value")
             field = value
         }
     var miningSpeedLevel: Int = 0
+        private set
+    var miningLevel: Int = 0
         private set
     var resourceMiningLevel: Int = 0
         private set
@@ -56,6 +65,13 @@ class Robot(
     var energyRegenLevel: Int = 0
         private set
 
+    fun move(planet: UUID, cost: Int) {
+
+    }
+
+    fun block() {
+
+    }
 
     fun receiveDamage(damage: Int) {
         this.health -= damage
@@ -85,17 +101,19 @@ class Robot(
 
     }
 
+    fun totalUpgrades(): Int {
+        TODO()
+    }
 
     companion object {
         val storageByLevel = arrayOf(20, 50, 100, 200, 400, 1000)
         val maxHealthByLevel = arrayOf(10, 25, 50, 100, 200, 500)
         val attackDamageByLevel = arrayOf(1, 2, 5, 10, 20, 50)
         val miningSpeedByLevel = arrayOf(2, 5, 10, 15, 20, 40)
+
         // TODO
         // val resourceMining
         val maxEnergyByLevel = arrayOf(20, 30, 40, 60, 100, 200)
         val energyRegenByLevel = arrayOf(4, 6, 8, 10, 15, 20)
-
-
     }
 }

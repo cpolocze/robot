@@ -1,10 +1,10 @@
 package com.msd.robot
 
+import com.msd.robot.domain.NotEnoughEnergyException
 import com.msd.robot.domain.UpgradeException
 import com.msd.robot.domain.Robot
 import com.msd.robot.domain.UpgradeType
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -14,8 +14,8 @@ import java.util.*
 
 class RobotTest {
 
-    lateinit var robot1: Robot
-    lateinit var robot2: Robot
+    private lateinit var robot1: Robot
+    private lateinit var robot2: Robot
 
     @BeforeEach
     fun initializeRobots() {
@@ -23,7 +23,71 @@ class RobotTest {
         robot2 = Robot(UUID.randomUUID())
     }
 
-    @Test()
+    @Test
+    fun `Robot uses Energy after moving`() {
+        //when
+        robot1.move(UUID.randomUUID(), 3)
+
+        //then
+        assertEquals(7, robot1.energy)
+    }
+
+    @Test
+    fun `Robot changes planet after successfully moving`() {
+        //given
+        val planetId = UUID.randomUUID()
+        //when
+        robot1.move(planetId, 3)
+        //then
+        assertEquals(planetId, robot1.planet)
+    }
+
+    @Test
+    fun `Robot does not move if it does not have enough energy`() {
+        //when
+        val initalPlanet = robot1.planet
+        val newPlanet = UUID.randomUUID()
+        //then
+        assertThrows<NotEnoughEnergyException> {
+            robot1.move(newPlanet, 11)
+        }
+        assertAll(
+            {
+                assertEquals(initalPlanet, robot1.planet)
+            },
+            {
+                assertNotEquals(newPlanet, robot1.planet)
+            }
+        )
+    }
+
+    @Test
+    fun `Robot can't move if current planet is blocked`() {
+        //given
+        val planet = UUID.randomUUID()
+        robot1.move(planet, 0)
+        robot2.move(planet, 0)
+        robot2.block()
+        //then
+        assertThrows<PlanetBlockedException> {
+            robot1.move(UUID.randomUUID(), 1)
+        }
+        assertEquals(planet, robot1.planet)
+    }
+
+    @Test
+    fun `Robot can enter blocked planet`() {
+        //given
+        val planet = UUID.randomUUID()
+        robot2.move(planet, 0)
+        robot2.block()
+        //when
+        robot1.move(planet, 1)
+        //then
+        assertEquals(planet, robot1.planet)
+    }
+
+    @Test
     fun `Robot is dead after health reaches 0 or less`() {
         // when
         robot1.receiveDamage(12)
@@ -31,6 +95,8 @@ class RobotTest {
 
         // assert
         assert(robot1.health <= 0)
+        assertFalse(robot1.alive)
+        assert(robot2.health == 0)
         assertFalse(robot1.alive)
     }
 
@@ -62,18 +128,27 @@ class RobotTest {
         assert(robot2.health == Robot.maxHealthByLevel[0] - Robot.attackDamageByLevel[0])
     }
 
-    //TODO
     @Test
     fun `Robot causes no damage if he doesnt have enough energy to attack`() {
-        //TODO()
+        //given
+        for (i in 0 until 10) robot1.move(UUID.randomUUID(), 1)
+
+        //then
+        assertThrows<NotEnoughEnergyException>("Tried to reduce energy by 1 but only has 0 energy") {
+            robot1.attack(
+                robot2
+            )
+        }
+        assertEquals(10, robot2.health)
     }
 
     @Test
-    fun `Upgrading a robot increases its upgrade level`(){
+    fun `Upgrading a robot increases its upgrade level`() {
         //given
         for (upgradeType in UpgradeType.values()) robot1.upgrade(upgradeType)
         //then
-        assertAll("All upgrade levels increase to 1",
+        assertAll(
+            "All upgrade levels increase to 1",
             {
                 assertEquals(1, robot1.storageLevel)
             },
