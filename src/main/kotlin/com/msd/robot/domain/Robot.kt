@@ -66,11 +66,11 @@ class Robot(
         private set
 
     fun move(planet: UUID, cost: Int) {
-
+        TODO()
     }
 
     fun block() {
-
+        TODO()
     }
 
     fun receiveDamage(damage: Int) {
@@ -90,7 +90,7 @@ class Robot(
             reduceEnergy(damageLevel)
             otherRobot.receiveDamage(attackDamage)
         } catch (neee: RuntimeException) {
-
+            TODO()
         }
     }
 
