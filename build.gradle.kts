@@ -19,18 +19,18 @@ repositories {
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.apache.kafka:kafka-streams")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa:2.5.5")
+	implementation("org.springframework.boot:spring-boot-starter-web:2.5.5")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
+	implementation("org.apache.kafka:kafka-streams:2.8.0")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	implementation("org.springframework.kafka:spring-kafka")
+	implementation("org.springframework.kafka:spring-kafka:2.7.6")
 	testImplementation(platform("org.junit:junit-bom:5.8.1"))
-	testImplementation("org.junit.jupiter:junit-jupiter")
+	testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 	runtimeOnly("com.h2database:h2")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.springframework.kafka:spring-kafka-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.5")
+	testImplementation("org.springframework.kafka:spring-kafka-test:2.7.6")
 }
 
 tasks.withType<KotlinCompile> {

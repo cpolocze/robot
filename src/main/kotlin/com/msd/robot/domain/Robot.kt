@@ -5,10 +5,11 @@ import java.lang.RuntimeException
 import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.OneToOne
 
 @Entity
 class Robot(
-        val player: UUID,
+    val player: UUID,
 ) {
     @Id
     val id: UUID = UUID.randomUUID()
@@ -30,6 +31,8 @@ class Robot(
     val attackDamage: Int
         get() = attackDamageByLevel[damageLevel]
 
+    @OneToOne
+    val inventory = Inventory()
 
     var storageLevel: Int = 0
         private set
@@ -41,8 +44,10 @@ class Robot(
         private set(value) {
             if (value > 5) throw UpgradeException("Max Damage Level has been reached. Upgrade not possible.")
             else if (value > damageLevel + 1)
-                throw UpgradeException("Cannot skip upgrade levels. " +
-                        "Tried to upgrade from level $damageLevel to level $value")
+                throw UpgradeException(
+                    "Cannot skip upgrade levels. " +
+                            "Tried to upgrade from level $damageLevel to level $value"
+                )
             else if (value <= damageLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $damageLevel to level $value")
             field = value
@@ -91,11 +96,10 @@ class Robot(
         val maxHealthByLevel = arrayOf(10, 25, 50, 100, 200, 500)
         val attackDamageByLevel = arrayOf(1, 2, 5, 10, 20, 50)
         val miningSpeedByLevel = arrayOf(2, 5, 10, 15, 20, 40)
+
         // TODO
         // val resourceMining
         val maxEnergyByLevel = arrayOf(20, 30, 40, 60, 100, 200)
         val energyRegenByLevel = arrayOf(4, 6, 8, 10, 15, 20)
-
-
     }
 }
