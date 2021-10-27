@@ -1,6 +1,6 @@
 package com.msd.robot.domain
 
-import com.msd.robot.ResourceType
+import com.msd.domain.ResourceType
 import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
 import java.util.*
@@ -10,7 +10,7 @@ import javax.persistence.OneToOne
 
 @Entity
 class Robot(
-        val player: UUID,
+    val player: UUID,
 ) {
     @Id
     val id: UUID = UUID.randomUUID()
@@ -48,7 +48,7 @@ class Robot(
             if (value > 5) throw UpgradeException("Max Storage Level has been reached. Upgrade not possible.")
             else if (value > storageLevel + 1)
                 throw UpgradeException(
-                        "Cannot skip upgrade levels. Tried to upgrade from level $storageLevel to level $value"
+                    "Cannot skip upgrade levels. Tried to upgrade from level $storageLevel to level $value"
                 )
             else if (value <= storageLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $storageLevel to level $value")
@@ -60,7 +60,7 @@ class Robot(
             if (value > 5) throw UpgradeException("Max Health Level has been reached. Upgrade not possible.")
             else if (value > healthLevel + 1)
                 throw UpgradeException(
-                        "Cannot skip upgrade levels. Tried to upgrade from level $healthLevel to level $value"
+                    "Cannot skip upgrade levels. Tried to upgrade from level $healthLevel to level $value"
                 )
             else if (value <= healthLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $healthLevel to level $value")
@@ -71,8 +71,10 @@ class Robot(
         private set(value) {
             if (value > 5) throw UpgradeException("Max Damage Level has been reached. Upgrade not possible.")
             else if (value > damageLevel + 1)
-                throw UpgradeException("Cannot skip upgrade levels. " +
-                        "Tried to upgrade from level $damageLevel to level $value")
+                throw UpgradeException(
+                    "Cannot skip upgrade levels. " +
+                            "Tried to upgrade from level $damageLevel to level $value"
+                )
             else if (value <= damageLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $damageLevel to level $value")
             field = value
@@ -83,7 +85,7 @@ class Robot(
             if (value > 5) throw UpgradeException("Max MiningSpeed Level has been reached. Upgrade not possible.")
             else if (value > miningSpeedLevel + 1)
                 throw UpgradeException(
-                        "Cannot skip upgrade levels. Tried to upgrade from level $miningSpeedLevel to level $value"
+                    "Cannot skip upgrade levels. Tried to upgrade from level $miningSpeedLevel to level $value"
                 )
             else if (value <= miningSpeedLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $miningSpeedLevel to level $value")
@@ -95,7 +97,7 @@ class Robot(
             if (value > 4) throw UpgradeException("Max Mining Level has been reached. Upgrade not possible.")
             else if (value > miningLevel + 1)
                 throw UpgradeException(
-                        "Cannot skip upgrade levels. Tried to upgrade from level $miningLevel to level $value"
+                    "Cannot skip upgrade levels. Tried to upgrade from level $miningLevel to level $value"
                 )
             else if (value <= miningLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $miningLevel to level $value")
@@ -107,7 +109,7 @@ class Robot(
             if (value > 5) throw UpgradeException("Max Energy Level has been reached. Upgrade not possible.")
             else if (value > energyLevel + 1)
                 throw UpgradeException(
-                        "Cannot skip upgrade levels. Tried to upgrade from level $energyLevel to level $value"
+                    "Cannot skip upgrade levels. Tried to upgrade from level $energyLevel to level $value"
                 )
             else if (value <= energyLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $energyLevel to level $value")
@@ -119,7 +121,7 @@ class Robot(
             if (value > 5) throw UpgradeException("Max Energy Regen Level has been reached. Upgrade not possible.")
             else if (value > energyRegenLevel + 1)
                 throw UpgradeException(
-                        "Cannot skip upgrade levels. Tried to upgrade from level $energyRegenLevel to level $value"
+                    "Cannot skip upgrade levels. Tried to upgrade from level $energyRegenLevel to level $value"
                 )
             else if (value <= energyRegenLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $energyRegenLevel to level $value")
@@ -167,7 +169,10 @@ class Robot(
             UpgradeType.ENERGY_REGEN -> energyRegenLevel++
             UpgradeType.MAX_ENERGY -> energyLevel++
             UpgradeType.HEALTH -> healthLevel++
-            UpgradeType.STORAGE -> storageLevel++
+            UpgradeType.STORAGE -> {
+                storageLevel++
+                inventory.upgrade(storageByLevel[storageLevel])
+            }
             UpgradeType.MINING_SPEED -> miningSpeedLevel++
             UpgradeType.MINING -> miningLevel++
         }

@@ -1,7 +1,6 @@
 package com.msd.robot.domain
 
-import com.msd.robot.PlanetBlockedException
-import com.msd.robot.ResourceType
+import com.msd.domain.ResourceType
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -191,7 +190,7 @@ class RobotTest {
                 assertEquals(Robot.miningSpeedByLevel[1], robot1.miningSpeed)
             },
             {
-                assertTrue(robot1.canMine(ResourceType.Iron))
+                assertTrue(robot1.canMine(ResourceType.IRON))
             },
             {
                 assertEquals(Robot.maxEnergyByLevel[1], robot1.maxEnergy)
@@ -205,7 +204,7 @@ class RobotTest {
     @Test
     fun `The upgrade level of a robot cannot go higher than 5 (except MiningLevel)`() {
         // given
-        for (upgradeType in UpgradeType.values()){
+        for (upgradeType in UpgradeType.values()) {
             if (upgradeType != UpgradeType.MINING)
                 for (i in 1..5) robot1.upgrade(upgradeType)
         }
