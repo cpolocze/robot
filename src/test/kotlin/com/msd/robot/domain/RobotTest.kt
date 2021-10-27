@@ -1,0 +1,254 @@
+package com.msd.robot.domain
+
+import com.msd.robot.PlanetBlockedException
+import com.msd.robot.ResourceType
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
+import java.util.*
+
+
+class RobotTest {
+
+    private lateinit var robot1: Robot
+    private lateinit var robot2: Robot
+
+    @BeforeEach
+    fun initializeRobots() {
+        robot1 = Robot(UUID.randomUUID())
+        robot2 = Robot(UUID.randomUUID())
+    }
+
+    @Test
+    fun `Robot uses Energy after moving`() {
+        //when
+        robot1.move(UUID.randomUUID(), 3)
+
+        //then
+        assertEquals(17, robot1.energy)
+    }
+
+    @Test
+    fun `Robot changes planet after successfully moving`() {
+        //given
+        val planetId = UUID.randomUUID()
+        //when
+        robot1.move(planetId, 3)
+        //then
+        assertEquals(planetId, robot1.planet)
+    }
+
+    @Test
+    fun `Robot does not move if it does not have enough energy`() {
+        //when
+        val initalPlanet = robot1.planet
+        val newPlanet = UUID.randomUUID()
+        //then
+        assertThrows<NotEnoughEnergyException> {
+            robot1.move(newPlanet, 21)
+        }
+        assertAll(
+            {
+                assertEquals(initalPlanet, robot1.planet)
+            },
+            {
+                assertNotEquals(newPlanet, robot1.planet)
+            }
+        )
+    }
+
+    @Test
+    fun `Robot can't move if current planet is blocked`() {
+        //given
+        val planet = UUID.randomUUID()
+        robot1.move(planet, 0)
+        robot2.move(planet, 0)
+        robot2.block()
+        //then
+        assertThrows<PlanetBlockedException> {
+            robot1.move(UUID.randomUUID(), 1)
+        }
+        assertEquals(planet, robot1.planet)
+    }
+
+    @Test
+    fun `Robot can enter blocked planet`() {
+        //given
+        val planet = UUID.randomUUID()
+        robot2.move(planet, 0)
+        robot2.block()
+        //when
+        robot1.move(planet, 1)
+        //then
+        assertEquals(planet, robot1.planet)
+    }
+
+    @Test
+    fun `Robot is dead after health reaches 0 or less`() {
+        // when
+        robot1.receiveDamage(12)
+        robot2.receiveDamage(10)
+
+        // assert
+        assert(robot1.health <= 0)
+        assertFalse(robot1.alive)
+        assert(robot2.health == 0)
+        assertFalse(robot1.alive)
+    }
+
+    @Test
+    fun `Robot health reduced by damage received`() {
+        // when
+        robot1.receiveDamage(9)
+
+        // assert
+        assert(robot1.health == 1)
+        assert(robot1.alive)
+    }
+
+    @Test
+    fun `Robot reduces energy when attacking`() {
+        // when
+        robot1.attack(robot2)
+
+        // assert
+        assert(robot1.energy == robot1.maxEnergy - robot1.damageLevel)
+    }
+
+    @Test
+    fun `Robot causes damage to second robot according to its attackDamage when attacking`() {
+        // when
+        robot1.attack(robot2)
+
+        // assert
+        assert(robot2.health == Robot.maxHealthByLevel[0] - Robot.attackDamageByLevel[0])
+    }
+
+    @Test
+    fun `Robot causes no damage if he doesnt have enough energy to attack`() {
+        //given
+        for (i in 0 until 10) robot1.move(UUID.randomUUID(), 2)
+
+        //then
+        assertThrows<NotEnoughEnergyException>("Tried to reduce energy by 1 but only has 0 energy") {
+            robot1.attack(robot2)
+        }
+        assertEquals(10, robot2.health)
+    }
+
+    @Test
+    fun `Upgrading a robot increases its upgrade level`() {
+        //given
+        for (upgradeType in UpgradeType.values()) robot1.upgrade(upgradeType)
+        //then
+        assertAll(
+            "All upgrade levels increase to 1",
+            {
+                assertEquals(1, robot1.storageLevel)
+            },
+            {
+                assertEquals(1, robot1.healthLevel)
+            },
+            {
+                assertEquals(1, robot1.damageLevel)
+            },
+            {
+                assertEquals(1, robot1.miningSpeedLevel)
+            },
+            {
+                assertEquals(1, robot1.miningLevel)
+            },
+            {
+                assertEquals(1, robot1.energyLevel)
+            },
+            {
+                assertEquals(1, robot1.energyRegenLevel)
+            },
+        )
+        assertEquals(7, robot1.totalUpgrades())
+    }
+
+    @Test
+    fun `Upgrading the level causes corresponding stat changes`() {
+        // given
+        for (upgradeType in UpgradeType.values()) robot1.upgrade(upgradeType)
+
+        // then
+        assertAll("",
+            {
+                // TODO
+                // assertEquals(Robot.storageByLevel[1], robot1.inventory.size)
+            },
+            {
+                assertEquals(Robot.maxHealthByLevel[1], robot1.maxHealth)
+            },
+            {
+                assertEquals(Robot.attackDamageByLevel[1], robot1.attackDamage)
+            },
+            {
+                assertEquals(Robot.miningSpeedByLevel[1], robot1.miningSpeed)
+            },
+            {
+                assertTrue(robot1.canMine(ResourceType.Iron))
+            },
+            {
+                assertEquals(Robot.maxEnergyByLevel[1], robot1.maxEnergy)
+            },
+            {
+                assertEquals(Robot.energyRegenByLevel[1], robot1.energyRegen)
+            }
+        )
+    }
+
+    @Test
+    fun `The upgrade level of a robot cannot go higher than 5 (except MiningLevel)`() {
+        // given
+        for (upgradeType in UpgradeType.values()){
+            if (upgradeType != UpgradeType.MINING)
+                for (i in 1..5) robot1.upgrade(upgradeType)
+        }
+        // assert
+        assertAll("Assert all upgrade levels being maxed at 5",
+            {
+                assertThrows<UpgradeException>("Max Storage Level has been reached. Upgrade not possible.") {
+                    robot1.upgrade(UpgradeType.STORAGE)
+                }
+            },
+            {
+                assertThrows<UpgradeException>("Max Health Level has been reached. Upgrade not possible.") {
+                    robot1.upgrade(UpgradeType.HEALTH)
+                }
+            },
+            {
+                assertThrows<UpgradeException>("Max Damage Level has been reached. Upgrade not possible.") {
+                    robot1.upgrade(UpgradeType.DAMAGE)
+                }
+            },
+            {
+                assertThrows<UpgradeException>("Max Mining Speed has been reached. Upgrade not possible.") {
+                    robot1.upgrade(UpgradeType.MINING_SPEED)
+                }
+            },
+            {
+                assertThrows<UpgradeException>("Max Energy Level has been reached. Upgrade not possible.") {
+                    robot1.upgrade(UpgradeType.MAX_ENERGY)
+                }
+            },
+            {
+                assertThrows<UpgradeException>("Max Energy Regen has been reached. Upgrade not possible.") {
+                    robot1.upgrade(UpgradeType.ENERGY_REGEN)
+                }
+            })
+    }
+
+    @Test
+    fun `The Mining Upgrade Level of a robot cannot go higher than 4`() {
+        for (i in 1..4) robot1.upgrade(UpgradeType.MINING)
+        assertThrows<UpgradeException>("Max Mining Level has been reached. Upgrade not possible.") {
+            robot1.upgrade(UpgradeType.MINING)
+        }
+    }
+
+}
