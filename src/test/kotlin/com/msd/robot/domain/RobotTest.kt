@@ -1,9 +1,7 @@
-package com.msd.robot
+package com.msd.robot.domain
 
-import com.msd.robot.domain.NotEnoughEnergyException
-import com.msd.robot.domain.UpgradeException
-import com.msd.robot.domain.Robot
-import com.msd.robot.domain.UpgradeType
+import com.msd.robot.PlanetBlockedException
+import com.msd.robot.ResourceType
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -29,7 +27,7 @@ class RobotTest {
         robot1.move(UUID.randomUUID(), 3)
 
         //then
-        assertEquals(7, robot1.energy)
+        assertEquals(17, robot1.energy)
     }
 
     @Test
@@ -49,7 +47,7 @@ class RobotTest {
         val newPlanet = UUID.randomUUID()
         //then
         assertThrows<NotEnoughEnergyException> {
-            robot1.move(newPlanet, 11)
+            robot1.move(newPlanet, 21)
         }
         assertAll(
             {
@@ -131,13 +129,11 @@ class RobotTest {
     @Test
     fun `Robot causes no damage if he doesnt have enough energy to attack`() {
         //given
-        for (i in 0 until 10) robot1.move(UUID.randomUUID(), 1)
+        for (i in 0 until 10) robot1.move(UUID.randomUUID(), 2)
 
         //then
         assertThrows<NotEnoughEnergyException>("Tried to reduce energy by 1 but only has 0 energy") {
-            robot1.attack(
-                robot2
-            )
+            robot1.attack(robot2)
         }
         assertEquals(10, robot2.health)
     }
@@ -171,7 +167,7 @@ class RobotTest {
                 assertEquals(1, robot1.energyRegenLevel)
             },
         )
-        assertEquals(5, robot1.totalUpgrades())
+        assertEquals(7, robot1.totalUpgrades())
     }
 
     @Test
@@ -182,7 +178,8 @@ class RobotTest {
         // then
         assertAll("",
             {
-                assertEquals(Robot.storageByLevel[1], robot1.storageLevel)
+                // TODO
+                // assertEquals(Robot.storageByLevel[1], robot1.inventory.size)
             },
             {
                 assertEquals(Robot.maxHealthByLevel[1], robot1.maxHealth)
@@ -191,10 +188,10 @@ class RobotTest {
                 assertEquals(Robot.attackDamageByLevel[1], robot1.attackDamage)
             },
             {
-                assertEquals(Robot.miningSpeedByLevel[1], robot1.miningSpeedLevel)
+                assertEquals(Robot.miningSpeedByLevel[1], robot1.miningSpeed)
             },
             {
-                assertEquals(Robot.miningByLevel[1], robot1.miningLevel)
+                assertTrue(robot1.canMine(ResourceType.Iron))
             },
             {
                 assertEquals(Robot.maxEnergyByLevel[1], robot1.maxEnergy)
@@ -206,9 +203,12 @@ class RobotTest {
     }
 
     @Test
-    fun `The upgrade level of a robot cannot go higher than 5`() {
+    fun `The upgrade level of a robot cannot go higher than 5 (except MiningLevel)`() {
         // given
-        for (upgradeType in UpgradeType.values()) for (i in 1..5) robot1.upgrade(upgradeType)
+        for (upgradeType in UpgradeType.values()){
+            if (upgradeType != UpgradeType.MINING)
+                for (i in 1..5) robot1.upgrade(upgradeType)
+        }
         // assert
         assertAll("Assert all upgrade levels being maxed at 5",
             {
@@ -232,11 +232,6 @@ class RobotTest {
                 }
             },
             {
-                assertThrows<UpgradeException>("Max Mining Level has been reached. Upgrade not possible.") {
-                    robot1.upgrade(UpgradeType.MINING)
-                }
-            },
-            {
                 assertThrows<UpgradeException>("Max Energy Level has been reached. Upgrade not possible.") {
                     robot1.upgrade(UpgradeType.MAX_ENERGY)
                 }
@@ -246,6 +241,14 @@ class RobotTest {
                     robot1.upgrade(UpgradeType.ENERGY_REGEN)
                 }
             })
+    }
+
+    @Test
+    fun `The Mining Upgrade Level of a robot cannot go higher than 4`() {
+        for (i in 1..4) robot1.upgrade(UpgradeType.MINING)
+        assertThrows<UpgradeException>("Max Mining Level has been reached. Upgrade not possible.") {
+            robot1.upgrade(UpgradeType.MINING)
+        }
     }
 
 }
