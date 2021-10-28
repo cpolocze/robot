@@ -1,5 +1,6 @@
 package com.msd.robot.domain
 
+import com.msd.domain.Planet
 import com.msd.domain.ResourceType
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -14,7 +15,7 @@ class InventoryTest {
 
     @BeforeEach
     fun initialize() {
-        robot1 = Robot(UUID.randomUUID())
+        robot1 = Robot(UUID.randomUUID(), Planet(UUID.randomUUID()))
     }
 
     @Test

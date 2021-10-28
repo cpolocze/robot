@@ -11,7 +11,7 @@ class Inventory {
     @Id
     val id = UUID.randomUUID()
     var maxStorage = 20
-        private set
+        internal set
     var usedStorage = 0
         private set
 
@@ -65,14 +65,5 @@ class Inventory {
         resourceMap[resource] = resourceMap[resource]!! - amount
         usedStorage -= amount
         return true
-    }
-
-    /**
-     * Upgrades the <code>maxStorage</code> of this inventory.
-     *
-     * @param maxStorage the level to which the <code>maxStorage</code> should be upgraded to
-     */
-    internal fun upgrade(maxStorage: Int) {
-        this.maxStorage = maxStorage
     }
 }

@@ -5,10 +5,7 @@ import com.msd.domain.ResourceType
 import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
 import java.util.*
-import javax.persistence.Embedded
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.OneToOne
+import javax.persistence.*
 
 @Entity
 class Robot(
@@ -33,7 +30,7 @@ class Robot(
     val attackDamage: Int
         get() = attackDamageByLevel[damageLevel]
 
-    @OneToOne
+    @OneToOne(cascade = [CascadeType.ALL])
     val inventory = Inventory()
     val miningSpeed: Int
         get() = miningSpeedByLevel[miningSpeedLevel]
@@ -172,7 +169,7 @@ class Robot(
             UpgradeType.HEALTH -> healthLevel++
             UpgradeType.STORAGE -> {
                 storageLevel++
-                inventory.upgrade(storageByLevel[storageLevel])
+                inventory.maxStorage= storageByLevel[storageLevel]
             }
             UpgradeType.MINING_SPEED -> miningSpeedLevel++
             UpgradeType.MINING -> miningLevel++
