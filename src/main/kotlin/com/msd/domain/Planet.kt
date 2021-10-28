@@ -1,8 +1,13 @@
 package com.msd.domain
 
 import java.util.*
+import javax.persistence.Embeddable
+import javax.persistence.Id
 
-class Planet(val id: UUID, val type: PlanetType, val playerId: UUID? = null) {
+@Embeddable
+class Planet(@Id val id: UUID, val type: PlanetType = PlanetType.STANDARD, val playerId: UUID? = null) {
+
+    var blocked: Boolean = false
 
     init {
         if(type == PlanetType.SPAWN && playerId == null) throw NullPointerException("Spawns must have a playerId")

@@ -1,9 +1,11 @@
 package com.msd.robot.domain
 
+import com.msd.domain.Planet
 import com.msd.domain.ResourceType
 import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
 import java.util.*
+import javax.persistence.Embedded
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.OneToOne
@@ -11,12 +13,11 @@ import javax.persistence.OneToOne
 @Entity
 class Robot(
     val player: UUID,
+    @Embedded var planet: Planet
 ) {
     @Id
     val id: UUID = UUID.randomUUID()
 
-    //TODO potentially replace planet through a class, move planet into constructor
-    var planet: UUID = UUID.randomUUID()
 
     var alive: Boolean = true
 
@@ -128,7 +129,7 @@ class Robot(
             field = value
         }
 
-    fun move(planet: UUID, cost: Int) {
+    fun move(planet: Planet, cost: Int) {
         this.planet = planet
         this.reduceEnergy(cost)
     }

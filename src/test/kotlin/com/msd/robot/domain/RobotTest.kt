@@ -1,5 +1,6 @@
 package com.msd.robot.domain
 
+import com.msd.domain.Planet
 import com.msd.domain.ResourceType
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -16,14 +17,15 @@ class RobotTest {
 
     @BeforeEach
     fun initializeRobots() {
-        robot1 = Robot(UUID.randomUUID())
-        robot2 = Robot(UUID.randomUUID())
+        val planet = Planet(UUID.randomUUID())
+        robot1 = Robot(UUID.randomUUID(), planet)
+        robot2 = Robot(UUID.randomUUID(), planet)
     }
 
     @Test
     fun `Robot uses Energy after moving`() {
         //when
-        robot1.move(UUID.randomUUID(), 3)
+        robot1.move(Planet(UUID.randomUUID()), 3)
 
         //then
         assertEquals(17, robot1.energy)
@@ -32,18 +34,18 @@ class RobotTest {
     @Test
     fun `Robot changes planet after successfully moving`() {
         //given
-        val planetId = UUID.randomUUID()
+        val planet = Planet(UUID.randomUUID())
         //when
-        robot1.move(planetId, 3)
+        robot1.move(planet, 3)
         //then
-        assertEquals(planetId, robot1.planet)
+        assertEquals(planet, robot1.planet)
     }
 
     @Test
     fun `Robot does not move if it does not have enough energy`() {
         //when
         val initalPlanet = robot1.planet
-        val newPlanet = UUID.randomUUID()
+        val newPlanet = Planet(UUID.randomUUID())
         //then
         assertThrows<NotEnoughEnergyException> {
             robot1.move(newPlanet, 21)
@@ -61,13 +63,13 @@ class RobotTest {
     @Test
     fun `Robot can't move if current planet is blocked`() {
         //given
-        val planet = UUID.randomUUID()
+        val planet = Planet(UUID.randomUUID())
         robot1.move(planet, 0)
         robot2.move(planet, 0)
         robot2.block()
         //then
         assertThrows<PlanetBlockedException> {
-            robot1.move(UUID.randomUUID(), 1)
+            robot1.move(Planet(UUID.randomUUID()), 1)
         }
         assertEquals(planet, robot1.planet)
     }
@@ -75,7 +77,7 @@ class RobotTest {
     @Test
     fun `Robot can enter blocked planet`() {
         //given
-        val planet = UUID.randomUUID()
+        val planet = Planet(UUID.randomUUID())
         robot2.move(planet, 0)
         robot2.block()
         //when
@@ -128,7 +130,7 @@ class RobotTest {
     @Test
     fun `Robot causes no damage if he doesnt have enough energy to attack`() {
         //given
-        for (i in 0 until 10) robot1.move(UUID.randomUUID(), 2)
+        for (i in 0 until 10) robot1.move(Planet(UUID.randomUUID()), 2)
 
         //then
         assertThrows<NotEnoughEnergyException>("Tried to reduce energy by 1 but only has 0 energy") {

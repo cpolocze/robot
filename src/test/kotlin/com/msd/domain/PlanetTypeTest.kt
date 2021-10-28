@@ -18,9 +18,6 @@ class PlanetTypeTest {
         assertThrows<IllegalArgumentException>("Only Spawns can have a playerId") {
             Planet(UUID.randomUUID(), PlanetType.SPACE_STATION, UUID.randomUUID())
         }
-        assertThrows<IllegalArgumentException>("Only Spawns can have a playerId") {
-            Planet(UUID.randomUUID(), PlanetType.SPACE_STATION)
-        }
         assertDoesNotThrow { Planet(UUID.randomUUID(), PlanetType.SPAWN, UUID.randomUUID()) }
     }
 }
