@@ -69,7 +69,7 @@ class Inventory {
      *
      * @param resource  the resource which should be taken
      * @param amount    the amount which should be taken
-     * @return          the taken amount of the resource
+     * @return          a boolean confirming that the specified resources have been taken
      */
     fun takeResource(resource: ResourceType, amount: Int): Boolean {
         if (resourceMap[resource]!! < amount) throw NotEnoughResourcesException("Wanted to take $amount, but only ${resourceMap[resource]!!} 10 were available")
