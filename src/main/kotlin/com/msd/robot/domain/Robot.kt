@@ -6,6 +6,7 @@ import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
 import java.util.*
 import javax.persistence.*
+import kotlin.math.round
 
 object UpgradeValues {
     val storageByLevel = arrayOf(20, 50, 100, 200, 400, 1000)
@@ -124,12 +125,15 @@ class Robot(
         }
 
     fun move(planet: Planet, cost: Int) {
-        this.planet = planet
         this.reduceEnergy(cost)
+        if (this.planet.blocked)
+            throw PlanetBlockedException("Tried to move out of a blocked planet")
+        this.planet = planet
     }
 
     fun block() {
-        TODO()
+        this.reduceEnergy(round(2 + 0.1 * maxEnergy).toInt())
+        this.planet.blocked = true
     }
 
     fun receiveDamage(damage: Int) {
@@ -145,17 +149,9 @@ class Robot(
     }
 
     fun attack(otherRobot: Robot) {
-        try {
-            reduceEnergy(damageLevel)
-            otherRobot.receiveDamage(attackDamage)
-        } catch (re: RuntimeException) {
-            /*
-            TODO
-            This gets thrown if the robot can not attack for some reason, currently that's fine and we don't
-            want to handle this. We just act like the robot didn't try to attack. We probably wanna throw an event
-            here in the future, to notify the player who tried to attack.
-            */
-        }
+        reduceEnergy(damageLevel + 1)
+        otherRobot.receiveDamage(attackDamage)
+
     }
 
     fun upgrade(upgradeType: UpgradeType) {
