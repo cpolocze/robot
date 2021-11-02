@@ -10,8 +10,19 @@ import javax.persistence.Id
 class Inventory {
     @Id
     val id = UUID.randomUUID()
-    var maxStorage = 20
-        internal set
+    var storageLevel: Int = 0
+        internal set(value) {
+            if (value > 5) throw UpgradeException("Max Storage Level has been reached. Upgrade not possible.")
+            else if (value > storageLevel + 1)
+                throw UpgradeException(
+                    "Cannot skip upgrade levels. Tried to upgrade from level $storageLevel to level $value"
+                )
+            else if (value <= storageLevel)
+                throw UpgradeException("Cannot downgrade Robot. Tried to go from level $storageLevel to level $value")
+            field = value
+        }
+    var maxStorage = UpgradeValues.storageByLevel[storageLevel]
+        private set
     var usedStorage = 0
         private set
 
@@ -61,7 +72,7 @@ class Inventory {
      * @return          the taken amount of the resource
      */
     fun takeResource(resource: ResourceType, amount: Int): Boolean {
-        if(resourceMap[resource]!! < amount) throw NotEnoughResourcesException("Wanted to take $amount, but only ${resourceMap[resource]!!} 10 were available")
+        if (resourceMap[resource]!! < amount) throw NotEnoughResourcesException("Wanted to take $amount, but only ${resourceMap[resource]!!} 10 were available")
         resourceMap[resource] = resourceMap[resource]!! - amount
         usedStorage -= amount
         return true

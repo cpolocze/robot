@@ -7,6 +7,15 @@ import java.lang.RuntimeException
 import java.util.*
 import javax.persistence.*
 
+object UpgradeValues {
+    val storageByLevel = arrayOf(20, 50, 100, 200, 400, 1000)
+    val maxHealthByLevel = arrayOf(10, 25, 50, 100, 200, 500)
+    val attackDamageByLevel = arrayOf(1, 2, 5, 10, 20, 50)
+    val miningSpeedByLevel = arrayOf(2, 5, 10, 15, 20, 40)
+    val maxEnergyByLevel = arrayOf(20, 30, 40, 60, 100, 200)
+    val energyRegenByLevel = arrayOf(4, 6, 8, 10, 15, 20)
+}
+
 @Entity
 class Robot(
     val player: UUID,
@@ -19,39 +28,27 @@ class Robot(
     var alive: Boolean = true
 
     val maxHealth
-        get() = maxHealthByLevel[healthLevel]
+        get() = UpgradeValues.maxHealthByLevel[healthLevel]
 
     val maxEnergy
-        get() = maxEnergyByLevel[energyLevel]
+        get() = UpgradeValues.maxEnergyByLevel[energyLevel]
 
     val energyRegen
-        get() = energyRegenByLevel[energyRegenLevel]
+        get() = UpgradeValues.energyRegenByLevel[energyRegenLevel]
 
     val attackDamage: Int
-        get() = attackDamageByLevel[damageLevel]
+        get() = UpgradeValues.attackDamageByLevel[damageLevel]
 
     @OneToOne(cascade = [CascadeType.ALL])
     val inventory = Inventory()
     val miningSpeed: Int
-        get() = miningSpeedByLevel[miningSpeedLevel]
+        get() = UpgradeValues.miningSpeedByLevel[miningSpeedLevel]
 
     var health: Int = maxHealth
         private set
 
     var energy: Int = maxEnergy
         private set
-
-    var storageLevel: Int = 0
-        private set(value) {
-            if (value > 5) throw UpgradeException("Max Storage Level has been reached. Upgrade not possible.")
-            else if (value > storageLevel + 1)
-                throw UpgradeException(
-                    "Cannot skip upgrade levels. Tried to upgrade from level $storageLevel to level $value"
-                )
-            else if (value <= storageLevel)
-                throw UpgradeException("Cannot downgrade Robot. Tried to go from level $storageLevel to level $value")
-            field = value
-        }
 
     var healthLevel: Int = 0
         private set(value) {
@@ -167,10 +164,7 @@ class Robot(
             UpgradeType.ENERGY_REGEN -> energyRegenLevel++
             UpgradeType.MAX_ENERGY -> energyLevel++
             UpgradeType.HEALTH -> healthLevel++
-            UpgradeType.STORAGE -> {
-                storageLevel++
-                inventory.maxStorage= storageByLevel[storageLevel]
-            }
+            UpgradeType.STORAGE -> inventory.storageLevel++
             UpgradeType.MINING_SPEED -> miningSpeedLevel++
             UpgradeType.MINING -> miningLevel++
         }
@@ -182,15 +176,8 @@ class Robot(
     }
 
     fun totalUpgrades(): Int {
-        return damageLevel + energyLevel + energyRegenLevel + healthLevel + storageLevel + miningSpeedLevel + miningLevel
+        return damageLevel + energyLevel + energyRegenLevel + healthLevel + inventory.storageLevel + miningSpeedLevel + miningLevel
     }
 
-    companion object {
-        val storageByLevel = arrayOf(20, 50, 100, 200, 400, 1000)
-        val maxHealthByLevel = arrayOf(10, 25, 50, 100, 200, 500)
-        val attackDamageByLevel = arrayOf(1, 2, 5, 10, 20, 50)
-        val miningSpeedByLevel = arrayOf(2, 5, 10, 15, 20, 40)
-        val maxEnergyByLevel = arrayOf(20, 30, 40, 60, 100, 200)
-        val energyRegenByLevel = arrayOf(4, 6, 8, 10, 15, 20)
-    }
+
 }
