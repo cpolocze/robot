@@ -146,7 +146,7 @@ class Robot(
 
     fun attack(otherRobot: Robot) {
         try {
-            reduceEnergy(damageLevel)
+            reduceEnergy(damageLevel + 1)
             otherRobot.receiveDamage(attackDamage)
         } catch (re: RuntimeException) {
             /*
