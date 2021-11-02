@@ -21,8 +21,8 @@ class Inventory {
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $storageLevel to level $value")
             field = value
         }
-    var maxStorage = UpgradeValues.storageByLevel[storageLevel]
-        private set
+    val maxStorage
+        get() = UpgradeValues.storageByLevel[storageLevel]
     var usedStorage = 0
         private set
 

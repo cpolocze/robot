@@ -124,7 +124,7 @@ class RobotTest {
         robot1.attack(robot2)
 
         // assert
-        assert(robot2.health == Robot.maxHealthByLevel[0] - Robot.attackDamageByLevel[0])
+        assert(robot2.health == UpgradeValues.maxHealthByLevel[0] - UpgradeValues.attackDamageByLevel[0])
     }
 
     @Test
@@ -147,7 +147,7 @@ class RobotTest {
         assertAll(
             "All upgrade levels increase to 1",
             {
-                assertEquals(1, robot1.storageLevel)
+                assertEquals(1, robot1.inventory.storageLevel)
             },
             {
                 assertEquals(1, robot1.healthLevel)
@@ -177,28 +177,27 @@ class RobotTest {
         for (upgradeType in UpgradeType.values()) robot1.upgrade(upgradeType)
 
         // then
-        assertAll("",
+        assertAll("Assert upgrading changes values",
             {
-                // TODO
-                // assertEquals(Robot.storageByLevel[1], robot1.inventory.size)
+                assertEquals(UpgradeValues.storageByLevel[1], robot1.inventory.maxStorage)
             },
             {
-                assertEquals(Robot.maxHealthByLevel[1], robot1.maxHealth)
+                assertEquals(UpgradeValues.maxHealthByLevel[1], robot1.maxHealth)
             },
             {
-                assertEquals(Robot.attackDamageByLevel[1], robot1.attackDamage)
+                assertEquals(UpgradeValues.attackDamageByLevel[1], robot1.attackDamage)
             },
             {
-                assertEquals(Robot.miningSpeedByLevel[1], robot1.miningSpeed)
+                assertEquals(UpgradeValues.miningSpeedByLevel[1], robot1.miningSpeed)
             },
             {
                 assertTrue(robot1.canMine(ResourceType.IRON))
             },
             {
-                assertEquals(Robot.maxEnergyByLevel[1], robot1.maxEnergy)
+                assertEquals(UpgradeValues.maxEnergyByLevel[1], robot1.maxEnergy)
             },
             {
-                assertEquals(Robot.energyRegenByLevel[1], robot1.energyRegen)
+                assertEquals(UpgradeValues.energyRegenByLevel[1], robot1.energyRegen)
             }
         )
     }
