@@ -47,7 +47,7 @@ class Inventory {
         if (newUsedStorage > maxStorage) {
             resourceMap[resource] = resourceMap[resource]!! + amount - (newUsedStorage - maxStorage)
             usedStorage = maxStorage
-            throw InventoryFullException("Added resources exceed maxStorage. Would be ${newUsedStorage}, max is $maxStorage")
+            throw InventoryFullException("Added resources exceed maxStorage. Would be $newUsedStorage, max is $maxStorage")
         } else {
             resourceMap[resource] = resourceMap[resource]!! + amount
             usedStorage += amount
@@ -58,7 +58,7 @@ class Inventory {
      * Returns the stored amount of a given resource. The resource will still remain in the inventory
      *
      * @param resource  the resource of which the amount should be returned
-     * @return          the stored amount of the resource as an <code>Int</code>
+     * @return the stored amount of the resource as an <code>Int</code>
      */
     fun getStorageUsageForResource(resource: ResourceType): Int {
         return resourceMap[resource]!!
@@ -69,7 +69,7 @@ class Inventory {
      *
      * @param resource  the resource which should be taken
      * @param amount    the amount which should be taken
-     * @return          a boolean confirming that the specified resources have been taken
+     * @return a boolean confirming that the specified resources have been taken
      */
     fun takeResource(resource: ResourceType, amount: Int): Boolean {
         if (resourceMap[resource]!! < amount) throw NotEnoughResourcesException("Wanted to take $amount, but only ${resourceMap[resource]!!} 10 were available")

@@ -1,5 +1,3 @@
 package com.msd.robot.domain
 
-class NotEnoughResourcesException(s: String) : RuntimeException(s) {
-
-}
+class NotEnoughResourcesException(s: String) : RuntimeException(s)

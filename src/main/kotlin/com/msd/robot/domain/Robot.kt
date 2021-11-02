@@ -3,7 +3,6 @@ package com.msd.robot.domain
 import com.msd.domain.Planet
 import com.msd.domain.ResourceType
 import java.lang.IllegalArgumentException
-import java.lang.RuntimeException
 import java.util.*
 import javax.persistence.*
 import kotlin.math.round
@@ -24,7 +23,6 @@ class Robot(
 ) {
     @Id
     val id: UUID = UUID.randomUUID()
-
 
     var alive: Boolean = true
 
@@ -69,7 +67,7 @@ class Robot(
             else if (value > damageLevel + 1)
                 throw UpgradeException(
                     "Cannot skip upgrade levels. " +
-                            "Tried to upgrade from level $damageLevel to level $value"
+                        "Tried to upgrade from level $damageLevel to level $value"
                 )
             else if (value <= damageLevel)
                 throw UpgradeException("Cannot downgrade Robot. Tried to go from level $damageLevel to level $value")
@@ -151,7 +149,6 @@ class Robot(
     fun attack(otherRobot: Robot) {
         reduceEnergy(damageLevel + 1)
         otherRobot.receiveDamage(attackDamage)
-
     }
 
     fun upgrade(upgradeType: UpgradeType) {
@@ -164,7 +161,6 @@ class Robot(
             UpgradeType.MINING_SPEED -> miningSpeedLevel++
             UpgradeType.MINING -> miningLevel++
         }
-
     }
 
     fun canMine(resourceType: ResourceType): Boolean {
@@ -174,6 +170,4 @@ class Robot(
     fun totalUpgrades(): Int {
         return damageLevel + energyLevel + energyRegenLevel + healthLevel + inventory.storageLevel + miningSpeedLevel + miningLevel
     }
-
-
 }

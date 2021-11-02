@@ -9,7 +9,6 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import java.util.*
 
-
 class RobotTest {
 
     private lateinit var robot1: Robot
@@ -24,29 +23,29 @@ class RobotTest {
 
     @Test
     fun `Robot uses Energy after moving`() {
-        //when
+        // when
         robot1.move(Planet(UUID.randomUUID()), 3)
 
-        //then
+        // then
         assertEquals(17, robot1.energy)
     }
 
     @Test
     fun `Robot changes planet after successfully moving`() {
-        //given
+        // given
         val planet = Planet(UUID.randomUUID())
-        //when
+        // when
         robot1.move(planet, 3)
-        //then
+        // then
         assertEquals(planet, robot1.planet)
     }
 
     @Test
     fun `Robot does not move if it does not have enough energy`() {
-        //when
+        // when
         val initalPlanet = robot1.planet
         val newPlanet = Planet(UUID.randomUUID())
-        //then
+        // then
         assertThrows<NotEnoughEnergyException> {
             robot1.move(newPlanet, 21)
         }
@@ -62,12 +61,12 @@ class RobotTest {
 
     @Test
     fun `Robot can't move if current planet is blocked`() {
-        //given
+        // given
         val planet = Planet(UUID.randomUUID())
         robot1.move(planet, 0)
         robot2.move(planet, 0)
         robot2.block()
-        //then
+        // then
         assertThrows<PlanetBlockedException> {
             robot1.move(Planet(UUID.randomUUID()), 1)
         }
@@ -76,12 +75,12 @@ class RobotTest {
 
     @Test
     fun `Robot still uses energy when trying to escape blocked planet`() {
-        //given
+        // given
         val planet = Planet(UUID.randomUUID())
         robot1.move(planet, 0)
         robot2.move(planet, 0)
         robot2.block()
-        //then
+        // then
         assertThrows<PlanetBlockedException> {
             robot1.move(Planet(UUID.randomUUID()), 1)
         }
@@ -90,13 +89,13 @@ class RobotTest {
 
     @Test
     fun `Robot can enter blocked planet`() {
-        //given
+        // given
         val planet = Planet(UUID.randomUUID())
         robot2.move(planet, 0)
         robot2.block()
-        //when
+        // when
         robot1.move(planet, 1)
-        //then
+        // then
         assertEquals(planet, robot1.planet)
     }
 
@@ -143,10 +142,10 @@ class RobotTest {
 
     @Test
     fun `Robot causes no damage if he doesnt have enough energy to attack`() {
-        //given
+        // given
         for (i in 0 until 10) robot1.move(Planet(UUID.randomUUID()), 2)
 
-        //then
+        // then
         assertThrows<NotEnoughEnergyException>("Tried to reduce energy by 1 but only has 0 energy") {
             robot1.attack(robot2)
         }
@@ -155,9 +154,9 @@ class RobotTest {
 
     @Test
     fun `Upgrading a robot increases its upgrade level`() {
-        //given
+        // given
         for (upgradeType in UpgradeType.values()) robot1.upgrade(upgradeType)
-        //then
+        // then
         assertAll(
             "All upgrade levels increase to 1",
             {
@@ -191,7 +190,8 @@ class RobotTest {
         for (upgradeType in UpgradeType.values()) robot1.upgrade(upgradeType)
 
         // then
-        assertAll("Assert upgrading changes values",
+        assertAll(
+            "Assert upgrading changes values",
             {
                 assertEquals(UpgradeValues.storageByLevel[1], robot1.inventory.maxStorage)
             },
@@ -224,7 +224,8 @@ class RobotTest {
                 for (i in 1..5) robot1.upgrade(upgradeType)
         }
         // assert
-        assertAll("Assert all upgrade levels being maxed at 5",
+        assertAll(
+            "Assert all upgrade levels being maxed at 5",
             {
                 assertThrows<UpgradeException>("Max Storage Level has been reached. Upgrade not possible.") {
                     robot1.upgrade(UpgradeType.STORAGE)
@@ -254,7 +255,8 @@ class RobotTest {
                 assertThrows<UpgradeException>("Max Energy Regen has been reached. Upgrade not possible.") {
                     robot1.upgrade(UpgradeType.ENERGY_REGEN)
                 }
-            })
+            }
+        )
     }
 
     @Test
@@ -264,5 +266,4 @@ class RobotTest {
             robot1.upgrade(UpgradeType.MINING)
         }
     }
-
 }
