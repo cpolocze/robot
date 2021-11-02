@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.5.31"
     id("org.jetbrains.kotlin.plugin.noarg") version "1.5.31"
+    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
     kotlin("jvm") version "1.5.31"
     kotlin("plugin.spring") version "1.5.31"
     kotlin("plugin.jpa") version "1.5.31"
@@ -42,4 +43,8 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    disabledRules.set(setOf("no-wildcard-imports"))
 }
