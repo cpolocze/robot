@@ -75,6 +75,20 @@ class RobotTest {
     }
 
     @Test
+    fun `Robot still uses energy when trying to escape blocked planet`() {
+        //given
+        val planet = Planet(UUID.randomUUID())
+        robot1.move(planet, 0)
+        robot2.move(planet, 0)
+        robot2.block()
+        //then
+        assertThrows<PlanetBlockedException> {
+            robot1.move(Planet(UUID.randomUUID()), 1)
+        }
+        assertEquals(robot1.energy, robot1.maxEnergy - 1)
+    }
+
+    @Test
     fun `Robot can enter blocked planet`() {
         //given
         val planet = Planet(UUID.randomUUID())
@@ -115,7 +129,7 @@ class RobotTest {
         robot1.attack(robot2)
 
         // assert
-        assert(robot1.energy == robot1.maxEnergy - robot1.damageLevel)
+        assertEquals(robot1.maxEnergy - (robot1.damageLevel + 1), robot1.energy)
     }
 
     @Test
