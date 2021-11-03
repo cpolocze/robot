@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "1.5.31"
     id("org.jetbrains.kotlin.plugin.noarg") version "1.5.31"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+    id("io.freefair.lombok") version "6.2.0"
     kotlin("jvm") version "1.5.31"
     kotlin("plugin.spring") version "1.5.31"
     kotlin("plugin.jpa") version "1.5.31"
@@ -27,6 +28,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.springframework.kafka:spring-kafka:2.7.6")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    testImplementation("com.squareup.okhttp3:okhttp:4.0.1")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.0.1")
     testImplementation(platform("org.junit:junit-bom:5.8.1"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     runtimeOnly("com.h2database:h2")
