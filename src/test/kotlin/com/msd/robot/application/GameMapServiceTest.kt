@@ -8,6 +8,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.UUID.*
 
 class GameMapServiceTest {
@@ -45,5 +46,19 @@ class GameMapServiceTest {
 
         // then
         assertEquals(targetPlanetDto.id, responsePlanetDto.id)
+    }
+
+    @Test
+    fun `Throws InvalidMoveException if the GameMap Service returns a 400`() {
+        // given
+        mockGameServiceWebClient.enqueue(
+            MockResponse()
+                .setResponseCode(400)
+        )
+
+        // then
+        assertThrows<InvalidMoveException> {
+            gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
+        }
     }
 }
