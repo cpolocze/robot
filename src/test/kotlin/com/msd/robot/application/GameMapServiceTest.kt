@@ -61,4 +61,18 @@ class GameMapServiceTest {
             gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
         }
     }
+
+    @Test
+    fun `Throws ClientInternalException if the GameMap Service returns a 500`() {
+        // given
+        mockGameServiceWebClient.enqueue(
+            MockResponse()
+                .setResponseCode(500)
+        )
+
+        // then
+        assertThrows<ClientInternalException> {
+            gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
+        }
+    }
 }

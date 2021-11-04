@@ -1,9 +1,9 @@
 package com.msd.robot.application
 
+import com.msd.robot.domain.NotEnoughEnergyException
+import com.msd.robot.domain.PlanetBlockedException
 import com.msd.robot.domain.RobotRepository
 import org.springframework.stereotype.Service
-import java.util.*
-import javax.persistence.EntityNotFoundException
 
 @Service
 class RobotApplicationService(
@@ -11,17 +11,40 @@ class RobotApplicationService(
     val gameMapService: GameMapService
 ) {
 
-    fun move(robotId: UUID, targetPlanetId: UUID, playerId: UUID) {
-        val robot = robotRepo.findById(robotId).orElseThrow { throw EntityNotFoundException("No Robot with ID: $robotId") }
+    fun move(moveCommand: MovementCommand) {
+        val robotId = moveCommand.robotId
+        val playerId = moveCommand.playerUUID
 
-        if (robot.player == playerId)
-            throw NotAllowedException(
-                "Player $playerId is not allowed to move robot $robotId, because he is not " +
-                    "the owner"
-            )
-        val planetDto = gameMapService.retrieveTargetPlanetIfRobotCanReach(robot.planet.id, targetPlanetId)
-        val cost = planetDto.movementCost
-        val planet = planetDto.toPlanet()
-        robot.move(planet, cost)
+        val robotOptional = robotRepo.findById(robotId)
+        if (!robotOptional.isPresent) {
+            // TODO throw failure Event
+            return
+        }
+        val robot = robotOptional.get()
+
+        if (robot.player != playerId) {
+            // TODO throw failure event
+            return
+        }
+        try {
+            val planetDto =
+                gameMapService.retrieveTargetPlanetIfRobotCanReach(robot.planet.planetId, moveCommand.targetPlanetUUID)
+            val cost = planetDto.movementCost
+            val planet = planetDto.toPlanet()
+            robot.move(planet, cost)
+        } catch (ime: InvalidMoveException) {
+            // TODO
+            // throw failure Event
+        } catch (cie: ClientInternalException) {
+            // TODO
+            // throw failure Event
+        } catch (pbe: PlanetBlockedException) {
+            // TODO
+            // throw failure event
+        } catch (noe: NotEnoughEnergyException) {
+            // TODO
+        }
+        // TODO
+        // throw succesfull execution event
     }
 }

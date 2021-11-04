@@ -19,7 +19,8 @@ object UpgradeValues {
 @Entity
 class Robot(
     val player: UUID,
-    @Embedded var planet: Planet
+    @Embedded
+    var planet: Planet
 ) {
     @Id
     val id: UUID = UUID.randomUUID()

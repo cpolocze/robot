@@ -2,10 +2,13 @@ package com.msd.domain
 
 import java.util.*
 import javax.persistence.Embeddable
-import javax.persistence.Id
 
 @Embeddable
-class Planet(@Id val id: UUID, val type: PlanetType = PlanetType.STANDARD, val playerId: UUID? = null) {
+data class Planet(
+    val planetId: UUID,
+    val type: PlanetType = PlanetType.STANDARD,
+    val playerId: UUID? = null
+) {
 
     var blocked: Boolean = false
 
