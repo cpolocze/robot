@@ -1,4 +1,4 @@
-package com.msd.domain
+package com.msd.planet.domain
 
 import java.util.*
 

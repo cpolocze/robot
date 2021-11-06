@@ -1,7 +1,7 @@
 package com.msd.robot.domain
 
-import com.msd.domain.Planet
 import com.msd.domain.ResourceType
+import com.msd.planet.domain.Planet
 import java.lang.IllegalArgumentException
 import java.util.*
 import javax.persistence.*
@@ -19,10 +19,14 @@ object UpgradeValues {
 @Entity
 class Robot(
     val player: UUID,
-    @Embedded var planet: Planet
+    planet: Planet
 ) {
     @Id
     val id: UUID = UUID.randomUUID()
+
+    @Embedded
+    var planet = planet
+        private set
 
     var alive: Boolean = true
 
@@ -131,7 +135,7 @@ class Robot(
 
     fun block() {
         this.reduceEnergy(round(2 + 0.1 * maxEnergy).toInt())
-        this.planet.blocked = true
+        this.planet.blocked = true // TODO make sure this gets reset every round
     }
 
     fun receiveDamage(damage: Int) {
