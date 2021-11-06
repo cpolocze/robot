@@ -9,7 +9,6 @@ data class Planet(
     val type: PlanetType = PlanetType.STANDARD,
     val playerId: UUID? = null
 ) {
-
     var blocked: Boolean = false
 
     init {
