@@ -60,7 +60,7 @@ class GameMapServiceTest {
         )
 
         // then
-        assertThrows<InvalidMoveException> {
+        assertThrows<TargetPlanetNotReachableException> {
             gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
         }
     }

@@ -2,7 +2,7 @@ package com.msd.application
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.msd.robot.application.InvalidMoveException
+import com.msd.robot.application.TargetPlanetNotReachableException
 import io.netty.channel.ChannelOption
 import io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE
 import io.netty.handler.timeout.ReadTimeoutHandler
@@ -46,6 +46,12 @@ class GameMapService {
             .build()
     }
 
+    /**
+     * Calls the GameMap MicroService to determine whether two [Planet]s are neighbors and returns a [GameMapPlanetDto]
+     * of the target planet, if they do. Otherwise an [TargetPlanetNotReachableException] gets thrown.
+     * If the MicroService is not reachable or has an internal error during processing of the request,
+     * a [ClientException] gets thrown.
+     */
     fun retrieveTargetPlanetIfRobotCanReach(startPlanetID: UUID, targetPlanetID: UUID): GameMapPlanetDto {
         val uriSpec = gameMapClient.get()
         val querySpec = uriSpec.uri {
@@ -61,7 +67,7 @@ class GameMapService {
 
                 // Right now we assume a 4xx being returned if the two planets are no neighbors
                 else if (response.statusCode().is4xxClientError)
-                    throw InvalidMoveException("The robot cannot move to the planet with ID $targetPlanetID")
+                    throw TargetPlanetNotReachableException("The robot cannot move to the planet with ID $targetPlanetID")
 
                 else
                     throw ClientException(

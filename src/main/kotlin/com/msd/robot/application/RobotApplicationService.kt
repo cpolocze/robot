@@ -14,6 +14,14 @@ class RobotApplicationService(
     val gameMapService: GameMapService
 ) {
 
+    /**
+     * Executes a single [MovementCommand] by checking whether the robot exists and the player is the owner of the
+     * robot. To get the new [Planet] the robot should be positioned on, if calls the GameMap MicroService through
+     * a connector service [GameMapService]. If everything goes right, the robot gets moved.
+     *
+     * At this level of abstraction it should never throw an exception, but rather signal success or failure through
+     * kafka events containing the transactionID of the command.
+     */
     fun move(moveCommand: MovementCommand) {
         val robotId = moveCommand.robotId
         val playerId = moveCommand.playerUUID
@@ -35,7 +43,7 @@ class RobotApplicationService(
             val cost = planetDto.movementCost
             val planet = planetDto.toPlanet()
             robot.move(planet, cost)
-        } catch (ime: InvalidMoveException) {
+        } catch (ime: TargetPlanetNotReachableException) {
             // TODO
             // throw failure Event
         } catch (cie: ClientException) {

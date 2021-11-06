@@ -85,7 +85,7 @@ class RobotApplicationServiceTest {
         val command = MovementCommand(robot1.id, planet2.planetId, robot1.player)
         Mockito
             .`when`(gameMapMockService.retrieveTargetPlanetIfRobotCanReach(UUID.randomUUID(), UUID.randomUUID()))
-            .thenThrow(InvalidMoveException(""))
+            .thenThrow(TargetPlanetNotReachableException(""))
 
         // when
         robotApplicationService.move(command)
