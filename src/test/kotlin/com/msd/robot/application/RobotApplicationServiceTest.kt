@@ -1,7 +1,11 @@
 package com.msd.robot.application
 
-import com.msd.domain.Planet
-import com.msd.domain.PlanetType
+import com.msd.application.ClientException
+import com.msd.application.GameMapPlanetDto
+import com.msd.application.GameMapService
+import com.msd.command.MovementCommand
+import com.msd.planet.domain.Planet
+import com.msd.planet.domain.PlanetType
 import com.msd.robot.domain.Robot
 import com.msd.robot.domain.RobotRepository
 import junit.framework.Assert.assertEquals
@@ -22,6 +26,7 @@ class RobotApplicationServiceTest {
 
     lateinit var robot1: Robot
     lateinit var robot2: Robot
+    lateinit var robot3: Robot
     lateinit var unknownRobotId: UUID
 
     lateinit var planet1: Planet
@@ -34,7 +39,6 @@ class RobotApplicationServiceTest {
     lateinit var robotApplicationService: RobotApplicationService
 
     val player1: UUID = UUID.randomUUID()
-    val player2: UUID = UUID.randomUUID()
 
     @BeforeEach
     @Transactional
@@ -46,6 +50,7 @@ class RobotApplicationServiceTest {
 
         robot1 = robotRepository.save(Robot(UUID.randomUUID(), planet1))
         robot2 = robotRepository.save(Robot(UUID.randomUUID(), planet2))
+        robot3 = robotRepository.save(Robot(UUID.randomUUID(), planet1))
         unknownRobotId = UUID.randomUUID()
     }
 
@@ -71,6 +76,7 @@ class RobotApplicationServiceTest {
 
         // then
         assertEquals(planet1, robot1.planet)
+        // TODO check if event got thrown
     }
 
     @Test
@@ -86,6 +92,57 @@ class RobotApplicationServiceTest {
 
         // then
         assertEquals(planet1, robot1.planet)
+        // TODO check if event got thrown
+    }
+
+    @Test
+    fun `GameMap service is not available, so robot shouldn't move`() {
+        // given
+        val command = MovementCommand(robot1.id, planet2.planetId, robot1.player)
+        Mockito
+            .`when`(gameMapMockService.retrieveTargetPlanetIfRobotCanReach(UUID.randomUUID(), UUID.randomUUID()))
+            .thenThrow(ClientException(""))
+
+        // when
+        robotApplicationService.move(command)
+
+        // then
+        assertEquals(planet1, robot1.planet)
+        // TODO check if event got thrown
+    }
+
+    @Test
+    fun `Robot has not enough energy so can't move`() {
+        // given
+        while (robot1.energy > 4) // blocking on Level 0 costs 4 energy
+            robot1.block()
+
+        val command = MovementCommand(robot1.id, planet2.planetId, robot1.player)
+
+        // when
+        robotApplicationService.move(command)
+
+        // then
+        assertEquals(planet1, robot1.planet)
+        // TODO check if event got thrown
+    }
+
+    @Test
+    fun `Robot tries to move out of a blocked planet`() {
+        // given
+        robot1.block()
+
+        val command = MovementCommand(robot3.id, planet2.planetId, robot3.player)
+        val planetDto = GameMapPlanetDto(planet2.planetId, 3, planet2.type, planet2.playerId)
+        Mockito
+            .`when`(gameMapMockService.retrieveTargetPlanetIfRobotCanReach(UUID.randomUUID(), UUID.randomUUID()))
+            .thenReturn(planetDto)
+
+        // when
+        robotApplicationService.move(command)
+
+        // then
+        assertEquals(planet1, robot3.planet)
     }
 
     @Test
@@ -102,5 +159,6 @@ class RobotApplicationServiceTest {
 
         // then
         assertEquals(planet1, robot1.planet)
+        // TODO check if event got thrown
     }
 }

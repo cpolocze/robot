@@ -1,7 +1,10 @@
 package com.msd.robot.application
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.msd.domain.PlanetType
+import com.msd.application.ClientException
+import com.msd.application.GameMapPlanetDto
+import com.msd.application.GameMapService
+import com.msd.planet.domain.PlanetType
 import junit.framework.Assert.assertEquals
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -63,7 +66,7 @@ class GameMapServiceTest {
     }
 
     @Test
-    fun `Throws ClientInternalException if the GameMap Service returns a 500`() {
+    fun `Throws ClientException if the GameMap Service returns a 500`() {
         // given
         mockGameServiceWebClient.enqueue(
             MockResponse()
@@ -71,7 +74,18 @@ class GameMapServiceTest {
         )
 
         // then
-        assertThrows<ClientInternalException> {
+        assertThrows<ClientException> {
+            gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
+        }
+    }
+
+    @Test
+    fun `Throws ClientException if the GameMap service is not reachable`() {
+        // given
+        mockGameServiceWebClient.shutdown()
+
+        // when then
+        assertThrows<ClientException> {
             gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
         }
     }

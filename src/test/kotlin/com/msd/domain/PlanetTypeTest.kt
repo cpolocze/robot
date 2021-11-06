@@ -1,5 +1,7 @@
 package com.msd.domain
 
+import com.msd.planet.domain.Planet
+import com.msd.planet.domain.PlanetType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows

@@ -1,5 +1,8 @@
 package com.msd.robot.application
 
+import com.msd.application.ClientException
+import com.msd.application.GameMapService
+import com.msd.command.MovementCommand
 import com.msd.robot.domain.NotEnoughEnergyException
 import com.msd.robot.domain.PlanetBlockedException
 import com.msd.robot.domain.RobotRepository
@@ -35,7 +38,7 @@ class RobotApplicationService(
         } catch (ime: InvalidMoveException) {
             // TODO
             // throw failure Event
-        } catch (cie: ClientInternalException) {
+        } catch (cie: ClientException) {
             // TODO
             // throw failure Event
         } catch (pbe: PlanetBlockedException) {
@@ -45,6 +48,6 @@ class RobotApplicationService(
             // TODO
         }
         // TODO
-        // throw succesfull execution event
+        // throw successful execution event
     }
 }

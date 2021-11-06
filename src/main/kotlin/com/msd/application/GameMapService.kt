@@ -1,7 +1,8 @@
-package com.msd.robot.application
+package com.msd.application
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.msd.robot.application.InvalidMoveException
 import io.netty.channel.ChannelOption
 import io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE
 import io.netty.handler.timeout.ReadTimeoutHandler
@@ -11,6 +12,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientRequestException
 import reactor.netty.http.client.HttpClient
 import java.time.Duration
 import java.util.*
@@ -52,18 +54,24 @@ class GameMapService {
                 .queryParam(GameMapServiceMetaData.NEIGHBOR_CHECK_TARGET_PLANET_PARAM, targetPlanetID.toString())
                 .build()
         }
-        val response = querySpec.exchangeToMono { response ->
-            if (response.statusCode() == HttpStatus.OK)
-                response.bodyToMono(String::class.java)
-            else if (response.statusCode().is4xxClientError)
-                throw InvalidMoveException("The robot cannot move to the planet with ID $targetPlanetID")
-            else
-                throw ClientInternalException(
-                    "GameMap Client returned internal error when retrieving targetPlanet " +
-                        "for movement"
-                )
-        }.block()!!
+        try {
+            val response = querySpec.exchangeToMono { response ->
+                if (response.statusCode() == HttpStatus.OK)
+                    response.bodyToMono(String::class.java)
 
-        return jacksonObjectMapper().readValue(response)
+                // Right now we assume a 4xx being returned if the two planets are no neighbors
+                else if (response.statusCode().is4xxClientError)
+                    throw InvalidMoveException("The robot cannot move to the planet with ID $targetPlanetID")
+
+                else
+                    throw ClientException(
+                        "GameMap Client returned internal error when retrieving targetPlanet " +
+                            "for movement"
+                    )
+            }.block()!!
+            return jacksonObjectMapper().readValue(response)
+        } catch (wcre: WebClientRequestException) {
+            throw ClientException("Could not connect to GameMap client")
+        }
     }
 }

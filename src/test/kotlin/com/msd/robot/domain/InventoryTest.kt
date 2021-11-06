@@ -1,7 +1,7 @@
 package com.msd.robot.domain
 
-import com.msd.domain.Planet
 import com.msd.domain.ResourceType
+import com.msd.planet.domain.Planet
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

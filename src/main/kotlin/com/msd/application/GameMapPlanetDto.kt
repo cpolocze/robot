@@ -1,7 +1,7 @@
-package com.msd.robot.application
+package com.msd.application
 
-import com.msd.domain.Planet
-import com.msd.domain.PlanetType
+import com.msd.planet.domain.Planet
+import com.msd.planet.domain.PlanetType
 import lombok.NoArgsConstructor
 import java.util.*
 
