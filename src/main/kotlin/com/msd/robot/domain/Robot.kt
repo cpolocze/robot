@@ -2,6 +2,7 @@ package com.msd.robot.domain
 
 import com.msd.domain.ResourceType
 import com.msd.planet.domain.Planet
+import com.msd.planet.domain.PlanetType
 import java.lang.IllegalArgumentException
 import java.util.*
 import javax.persistence.*
@@ -51,7 +52,12 @@ class Robot(
         private set
 
     var energy: Int = maxEnergy
-        private set
+        private set(value) {
+            field = if (value > maxEnergy)
+                maxEnergy
+            else
+                value
+        }
 
     var healthLevel: Int = 0
         private set(value) {
@@ -173,5 +179,13 @@ class Robot(
 
     fun totalUpgrades(): Int {
         return damageLevel + energyLevel + energyRegenLevel + healthLevel + inventory.storageLevel + miningSpeedLevel + miningLevel
+    }
+
+    fun regenerateEnergy() {
+        energy += if (planet.type == PlanetType.SPAWN) {
+            energyRegen * 2
+        } else {
+            energyRegen
+        }
     }
 }
