@@ -3,6 +3,7 @@ package com.msd.robot.application
 import com.msd.application.ClientException
 import com.msd.application.GameMapService
 import com.msd.command.MovementCommand
+import com.msd.command.RegenCommand
 import com.msd.robot.domain.NotEnoughEnergyException
 import com.msd.robot.domain.PlanetBlockedException
 import com.msd.robot.domain.RobotRepository
@@ -56,5 +57,8 @@ class RobotApplicationService(
         }
         // TODO
         // throw successful execution event
+    }
+
+    fun regenerateEnergy(regenCommand: RegenCommand) {
     }
 }

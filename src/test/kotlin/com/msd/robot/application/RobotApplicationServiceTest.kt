@@ -4,13 +4,15 @@ import com.msd.application.ClientException
 import com.msd.application.GameMapPlanetDto
 import com.msd.application.GameMapService
 import com.msd.command.MovementCommand
+import com.msd.command.RegenCommand
 import com.msd.planet.domain.Planet
 import com.msd.planet.domain.PlanetType
 import com.msd.robot.domain.Robot
 import com.msd.robot.domain.RobotRepository
-import junit.framework.Assert.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -128,7 +130,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Robot tries to move out of a blocked planet`() {
+    fun `Robot can't move out of a blocked planet`() {
         // given
         robot1.block()
 
@@ -160,5 +162,35 @@ class RobotApplicationServiceTest {
         // then
         assertEquals(planet1, robot1.planet)
         // TODO check if event got thrown
+    }
+
+    @Test
+    fun `Unknown robotId when regenerating causes an exception to be thrown`() {
+        // when
+        assertThrows<RobotNotFoundException> {
+            robotApplicationService.regenerateEnergy(RegenCommand(UUID.randomUUID(), UUID.randomUUID()))
+        }
+        // then
+        // TODO check if event got thrown
+    }
+
+    @Test
+    fun `playerId not matching ownerId when regenerating causes an exception to be thrown`() {
+        // when
+        assertThrows<InvalidPlayerException> {
+            robotApplicationService.regenerateEnergy(RegenCommand(UUID.randomUUID(), robot1.id))
+        }
+        // then
+        // TODO check if event got thrown
+    }
+
+    @Test
+    fun `Robot energy increases when regenerating`() {
+        // given
+        robot1.move(Planet(UUID.randomUUID()), 10)
+        // when
+        robotApplicationService.regenerateEnergy(RegenCommand(robot1.player, robot1.id))
+        // then
+        assertEquals(14, robot1.energy)
     }
 }
