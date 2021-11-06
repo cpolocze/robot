@@ -51,6 +51,11 @@ class GameMapService {
      * of the target planet, if they do. Otherwise an [TargetPlanetNotReachableException] gets thrown.
      * If the MicroService is not reachable or has an internal error during processing of the request,
      * a [ClientException] gets thrown.
+     *
+     * @param startPlanetID: The ID of the planet the robot wants to move away from
+     * @param targetPlanetID: The ID of the planet the robot wants to move to
+     *
+     * @return A DTO of the planet the robot moves to
      */
     fun retrieveTargetPlanetIfRobotCanReach(startPlanetID: UUID, targetPlanetID: UUID): GameMapPlanetDto {
         val uriSpec = gameMapClient.get()
