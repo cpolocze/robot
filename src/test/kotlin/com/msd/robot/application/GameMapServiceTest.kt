@@ -74,9 +74,11 @@ class GameMapServiceTest {
         )
 
         // then
-        assertThrows<ClientException> {
+        val exception = assertThrows<ClientException> {
             gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
         }
+        assertEquals("GameMap Client returned internal error when retrieving targetPlanet for movement",
+                                exception.message)
     }
 
     @Test
@@ -85,8 +87,9 @@ class GameMapServiceTest {
         mockGameServiceWebClient.shutdown()
 
         // when then
-        assertThrows<ClientException> {
+        val exception = assertThrows<ClientException> {
             gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
         }
+        assertEquals("Could not connect to GameMap client", exception.message)
     }
 }

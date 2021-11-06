@@ -6,6 +6,7 @@ import com.msd.command.MovementCommand
 import com.msd.robot.domain.NotEnoughEnergyException
 import com.msd.robot.domain.PlanetBlockedException
 import com.msd.robot.domain.RobotRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -26,12 +27,10 @@ class RobotApplicationService(
         val robotId = moveCommand.robotId
         val playerId = moveCommand.playerUUID
 
-        val robotOptional = robotRepo.findById(robotId)
-        if (!robotOptional.isPresent) {
+        val robot = robotRepo.findByIdOrNull(robotId) ?: run {
             // TODO throw failure Event
             return
         }
-        val robot = robotOptional.get()
 
         if (robot.player != playerId) {
             // TODO throw failure event
