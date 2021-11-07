@@ -123,7 +123,6 @@ class RobotApplicationServiceTest {
         val command = MovementCommand(robot1.id, robot1.player, planet2.planetId)
         val planetDto = GameMapPlanetDto(planet2.planetId, 3, planet2.type, planet2.playerId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
-        every { robotRepository.save(any()) } returns robot1
         every { gameMapMockService.retrieveTargetPlanetIfRobotCanReach(any(), any()) } returns planetDto
 
         // when
