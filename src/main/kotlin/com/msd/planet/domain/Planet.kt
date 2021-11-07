@@ -1,10 +1,12 @@
 package com.msd.planet.domain
 
 import java.util.*
-import javax.persistence.Embeddable
+import javax.persistence.Entity
+import javax.persistence.Id
 
-@Embeddable
+@Entity
 data class Planet(
+    @Id
     val planetId: UUID,
     val type: PlanetType = PlanetType.STANDARD,
     val playerId: UUID? = null

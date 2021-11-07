@@ -3,6 +3,7 @@ package com.msd.robot.application
 import com.msd.application.ClientException
 import com.msd.application.GameMapPlanetDto
 import com.msd.application.GameMapService
+import com.msd.command.BlockCommand
 import com.msd.command.MovementCommand
 import com.msd.command.RegenCommand
 import com.msd.planet.domain.Planet
@@ -206,5 +207,49 @@ class RobotApplicationServiceTest {
         // then
         assertEquals(18, robot1.energy)
         verify(exactly = 1) { robotRepository.save(robot1) }
+    }
+
+    @Test
+    fun `Robot blocks planet successfully`() {
+        // given
+        val command = BlockCommand(robot1.id, robot1.player)
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+        every { robotRepository.save(any()) } returns robot1
+
+        // when
+        robotApplicationService.block(command)
+
+        // then
+        assert(robot1.planet.blocked)
+        assert(robot3.planet.blocked)
+    }
+
+    @Test
+    fun `Robot cannot block planet if it has not enough energy`() {
+        // given
+        robot1.move(planet1, 19)
+        val command = BlockCommand(robot1.id, robot1.player)
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+
+        // when
+        assertThrows<NotEnoughEnergyException> {
+            robotApplicationService.block(command)
+        }
+
+        // then
+        assert(!robot1.planet.blocked)
+    }
+
+    @Test
+    fun `Robot can't block planet if players don't match`() {
+        // given
+        val command = BlockCommand(robot1.id, UUID.randomUUID())
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+        // when
+        assertThrows<InvalidPlayerException> {
+            robotApplicationService.block(command)
+        }
+        // then
+        assert(!robot1.planet.blocked)
     }
 }

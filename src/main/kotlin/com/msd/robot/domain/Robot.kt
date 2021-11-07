@@ -25,7 +25,7 @@ class Robot(
     @Id
     val id: UUID = UUID.randomUUID()
 
-    @Embedded
+    @ManyToOne(cascade = [CascadeType.MERGE])
     var planet = planet
         private set
 
