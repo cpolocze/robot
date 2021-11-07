@@ -4,15 +4,14 @@ import com.msd.application.GameMapService
 import com.msd.command.BlockCommand
 import com.msd.command.MovementCommand
 import com.msd.robot.domain.Robot
-import com.msd.robot.domain.RobotRepository
-import org.springframework.data.repository.findByIdOrNull
+import com.msd.robot.domain.RobotDomainService
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class RobotApplicationService(
-    val robotRepo: RobotRepository,
-    val gameMapService: GameMapService
+    val gameMapService: GameMapService,
+    val robotDomainService: RobotDomainService
 ) {
 
     /**
@@ -27,15 +26,15 @@ class RobotApplicationService(
         val robotId = moveCommand.robotId
         val playerId = moveCommand.playerUUID
 
-        val robot = getRobot(robotId)
+        val robot = robotDomainService.getRobot(robotId)
 
-        checkPlayers(robot.player, playerId)
+        robotDomainService.doesRobotBelongsToPlayer(robot, playerId)
         val planetDto =
             gameMapService.retrieveTargetPlanetIfRobotCanReach(robot.planet.planetId, moveCommand.targetPlanetUUID)
         val cost = planetDto.movementCost
         val planet = planetDto.toPlanet()
         robot.move(planet, cost)
-        robotRepo.save(robot)
+        robotDomainService.saveRobot(robot)
     }
 
     /**
@@ -46,33 +45,9 @@ class RobotApplicationService(
      * @throws InvalidPlayerException  if the PlayerIDs specified in the `BlockCommand` and `Robot` don't match
      */
     fun block(blockCommand: BlockCommand) {
-        val robot = getRobot(blockCommand.robotId)
-        checkPlayers(robot.player, blockCommand.playerUUID)
+        val robot = robotDomainService.getRobot(blockCommand.robotId)
+        robotDomainService.doesRobotBelongsToPlayer(robot, blockCommand.playerUUID)
         robot.block()
-        robotRepo.save(robot)
-    }
-
-    /**
-     * Checks if the two specified PlayerIDs match.
-     *
-     * @param robotPlayerId   the `playerId` of the [Robot]
-     * @param commandPlayerId the `playerUUID` of the [Command]
-     * @return `true` if the IDs match
-     * @throws InvalidPlayerException if both `UUIDs` don't match
-     */
-    private fun checkPlayers(robotPlayerId: UUID, commandPlayerId: UUID) {
-        if (robotPlayerId != commandPlayerId) throw InvalidPlayerException("Specified player doesn't match player specified in robot")
-    }
-
-    /**
-     * Gets the specified [Robot].
-     *
-     * @param robotId the `UUID` of the robot which should be returned
-     * @return the specified Robot
-     * @throws RobotNotFoundException  if there is no `Robot` with the specified ID
-     */
-    private fun getRobot(robotId: UUID): Robot {
-        return robotRepo.findByIdOrNull(robotId)
-            ?: throw RobotNotFoundException("Can't find robot with id $robotId")
+        robotDomainService.saveRobot(robot)
     }
 }
