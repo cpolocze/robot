@@ -60,5 +60,15 @@ class RobotApplicationService(
     }
 
     fun regenerateEnergy(regenCommand: RegenCommand) {
+        val robot = robotRepo.findByIdOrNull(regenCommand.robotId) ?: run {
+            // TODO throw event
+            throw RobotNotFoundException("No robot with ${regenCommand.robotId} was found")
+        }
+        if (robot.player != regenCommand.playerId) {
+            // TODO throw event
+            throw InvalidPlayerException("The specified playerId and the robot playerId don't match")
+        }
+        robot.regenerateEnergy()
+        robotRepo.save(robot)
     }
 }

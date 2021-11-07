@@ -59,7 +59,7 @@ class RobotApplicationServiceTest {
     @Test
     fun `Movement command specifies unknown robotId`() {
         // given
-        val command = MovementCommand(unknownRobotId, planet1.planetId, player1)
+        val command = MovementCommand(planet1.planetId, player1, unknownRobotId)
 
         // when
         robotApplicationService.move(command)
@@ -71,7 +71,7 @@ class RobotApplicationServiceTest {
     @Test
     fun `Movement command specifies different player than robot owner`() {
         // given
-        val command = MovementCommand(robot1.id, planet2.planetId, robot2.player)
+        val command = MovementCommand(planet2.planetId, robot2.player, robot1.id)
 
         // when
         robotApplicationService.move(command)
@@ -84,7 +84,7 @@ class RobotApplicationServiceTest {
     @Test
     fun `If GameMap Service returns impossible path, robot doesn't move`() {
         // given
-        val command = MovementCommand(robot1.id, planet2.planetId, robot1.player)
+        val command = MovementCommand(planet2.planetId, robot1.player, robot1.id)
         Mockito
             .`when`(gameMapMockService.retrieveTargetPlanetIfRobotCanReach(UUID.randomUUID(), UUID.randomUUID()))
             .thenThrow(TargetPlanetNotReachableException(""))
@@ -100,7 +100,7 @@ class RobotApplicationServiceTest {
     @Test
     fun `GameMap service is not available, so robot shouldn't move`() {
         // given
-        val command = MovementCommand(robot1.id, planet2.planetId, robot1.player)
+        val command = MovementCommand(planet2.planetId, robot1.player, robot1.id)
         Mockito
             .`when`(gameMapMockService.retrieveTargetPlanetIfRobotCanReach(UUID.randomUUID(), UUID.randomUUID()))
             .thenThrow(ClientException(""))
@@ -119,7 +119,7 @@ class RobotApplicationServiceTest {
         while (robot1.energy > 4) // blocking on Level 0 costs 4 energy
             robot1.block()
 
-        val command = MovementCommand(robot1.id, planet2.planetId, robot1.player)
+        val command = MovementCommand(planet2.planetId, robot1.player, robot1.id)
 
         // when
         robotApplicationService.move(command)
@@ -134,7 +134,7 @@ class RobotApplicationServiceTest {
         // given
         robot1.block()
 
-        val command = MovementCommand(robot3.id, planet2.planetId, robot3.player)
+        val command = MovementCommand(planet2.planetId, robot3.player, robot3.id)
         val planetDto = GameMapPlanetDto(planet2.planetId, 3, planet2.type, planet2.playerId)
         Mockito
             .`when`(gameMapMockService.retrieveTargetPlanetIfRobotCanReach(UUID.randomUUID(), UUID.randomUUID()))
@@ -150,7 +150,7 @@ class RobotApplicationServiceTest {
     @Test
     fun `Robot moves if there are no problems`() {
         // given
-        val command = MovementCommand(robot1.id, planet2.planetId, robot1.player)
+        val command = MovementCommand(planet2.planetId, robot1.player, robot1.id)
         val planetDto = GameMapPlanetDto(planet2.planetId, 3, planet2.type, planet2.playerId)
         Mockito
             .`when`(gameMapMockService.retrieveTargetPlanetIfRobotCanReach(UUID.randomUUID(), UUID.randomUUID()))
@@ -166,31 +166,43 @@ class RobotApplicationServiceTest {
 
     @Test
     fun `Unknown robotId when regenerating causes an exception to be thrown`() {
+        // given
+        robot1.move(Planet(UUID.randomUUID()), 10)
+
         // when
         assertThrows<RobotNotFoundException> {
             robotApplicationService.regenerateEnergy(RegenCommand(UUID.randomUUID(), UUID.randomUUID()))
         }
+
         // then
+        assertEquals(10, robot1.energy)
         // TODO check if event got thrown
     }
 
     @Test
     fun `playerId not matching ownerId when regenerating causes an exception to be thrown`() {
+        // given
+        robot1.move(Planet(UUID.randomUUID()), 10)
+
         // when
         assertThrows<InvalidPlayerException> {
-            robotApplicationService.regenerateEnergy(RegenCommand(UUID.randomUUID(), robot1.id))
+            robotApplicationService.regenerateEnergy(RegenCommand(robot1.id, UUID.randomUUID()))
         }
+
         // then
+        assertEquals(10, robot1.energy)
         // TODO check if event got thrown
     }
 
     @Test
     fun `Robot energy increases when regenerating`() {
         // given
-        robot1.move(Planet(UUID.randomUUID()), 10)
+        robot1.move(Planet(UUID.randomUUID()), 6)
         // when
-        robotApplicationService.regenerateEnergy(RegenCommand(robot1.player, robot1.id))
+        robotApplicationService.regenerateEnergy(RegenCommand(robot1.id, robot1.player))
+
         // then
-        assertEquals(14, robot1.energy)
+        assertEquals(18, robot1.energy)
+        // TODO check if success event got thrown
     }
 }

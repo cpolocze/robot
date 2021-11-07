@@ -2,4 +2,4 @@ package com.msd.command
 
 import java.util.*
 
-class RegenCommand(val playerId: UUID, robotId: UUID) : Command(robotId)
+class RegenCommand(robotId: UUID, val playerId: UUID) : Command(robotId)
