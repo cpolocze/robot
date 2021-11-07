@@ -29,12 +29,12 @@ class RobotApplicationService(
 
         val robot = robotRepo.findByIdOrNull(robotId) ?: run {
             // TODO throw failure Event
-            return
+            throw RobotNotFoundException("Can't find robot with id $robotId")
         }
 
         if (robot.player != playerId) {
             // TODO throw failure event
-            return
+            throw InvalidPlayerException("Specified player doesn't match player specified in robot")
         }
         try {
             val planetDto =
