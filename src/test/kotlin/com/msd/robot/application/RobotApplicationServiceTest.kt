@@ -68,7 +68,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Robot doesn't move if players don't`() {
+    fun `Robot doesn't move if players don't match`() {
         // given
         val command = MovementCommand(robot1.id, robot2.player, planet2.planetId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
@@ -191,6 +191,7 @@ class RobotApplicationServiceTest {
         assertThrows<InvalidPlayerException> {
             robotApplicationService.regenerateEnergy(RegenCommand(robot1.id, UUID.randomUUID()))
         }
+        assertEquals(10, robot1.energy)
     }
 
     @Test
