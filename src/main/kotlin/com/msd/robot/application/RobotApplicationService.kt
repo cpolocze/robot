@@ -1,15 +1,17 @@
 package com.msd.robot.application
 
 import com.msd.application.GameMapService
+import com.msd.command.BlockCommand
 import com.msd.command.MovementCommand
-import com.msd.robot.domain.RobotRepository
-import org.springframework.data.repository.findByIdOrNull
+import com.msd.robot.domain.Robot
+import com.msd.robot.domain.RobotDomainService
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class RobotApplicationService(
-    val robotRepo: RobotRepository,
-    val gameMapService: GameMapService
+    val gameMapService: GameMapService,
+    val robotDomainService: RobotDomainService
 ) {
 
     /**
@@ -24,15 +26,28 @@ class RobotApplicationService(
         val robotId = moveCommand.robotId
         val playerId = moveCommand.playerUUID
 
-        val robot =
-            robotRepo.findByIdOrNull(robotId) ?: throw RobotNotFoundException("Can't find robot with id $robotId")
+        val robot = robotDomainService.getRobot(robotId)
 
-        if (robot.player != playerId) throw InvalidPlayerException("Specified player doesn't match player specified in robot")
+        robotDomainService.doesRobotBelongsToPlayer(robot, playerId)
         val planetDto =
             gameMapService.retrieveTargetPlanetIfRobotCanReach(robot.planet.planetId, moveCommand.targetPlanetUUID)
         val cost = planetDto.movementCost
         val planet = planetDto.toPlanet()
         robot.move(planet, cost)
-        robotRepo.save(robot)
+        robotDomainService.saveRobot(robot)
+    }
+
+    /**
+     * Makes the [Robot] specified in the [BlockCommand] block its current [Planet].
+     *
+     * @param blockCommand            The `BlockCommand` which specifies which robot should block
+     * @throws RobotNotFoundException  if no robot with the ID specified in the `BlockCommand` can be found
+     * @throws InvalidPlayerException  if the PlayerIDs specified in the `BlockCommand` and `Robot` don't match
+     */
+    fun block(blockCommand: BlockCommand) {
+        val robot = robotDomainService.getRobot(blockCommand.robotId)
+        robotDomainService.doesRobotBelongsToPlayer(robot, blockCommand.playerUUID)
+        robot.block()
+        robotDomainService.saveRobot(robot)
     }
 }
