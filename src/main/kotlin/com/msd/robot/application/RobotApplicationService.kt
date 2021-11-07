@@ -1,6 +1,7 @@
 package com.msd.robot.application
 
 import com.msd.application.GameMapService
+import com.msd.command.BlockCommand
 import com.msd.command.MovementCommand
 import com.msd.robot.domain.RobotRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -34,5 +35,9 @@ class RobotApplicationService(
         val planet = planetDto.toPlanet()
         robot.move(planet, cost)
         robotRepo.save(robot)
+    }
+
+    fun block(blockCommand: BlockCommand) {
+
     }
 }
