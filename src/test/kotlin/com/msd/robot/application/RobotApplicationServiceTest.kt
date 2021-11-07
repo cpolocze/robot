@@ -201,4 +201,17 @@ class RobotApplicationServiceTest {
         // then
         assert(!robot1.planet.blocked)
     }
+
+    @Test
+    fun `Robot can't block planet if players don't match`() {
+        // given
+        val command = BlockCommand(robot1.id, UUID.randomUUID())
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+        // when
+        assertThrows<InvalidPlayerException> {
+            robotApplicationService.block(command)
+        }
+        // then
+        assert(!robot1.planet.blocked)
+    }
 }
