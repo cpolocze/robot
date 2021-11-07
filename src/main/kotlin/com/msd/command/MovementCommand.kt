@@ -7,6 +7,6 @@ import java.util.*
  */
 class MovementCommand(
     robotUUID: UUID,
-    val targetPlanetUUID: UUID,
-    val playerUUID: UUID
+    val playerUUID: UUID,
+    val targetPlanetUUID: UUID
 ) : Command(robotUUID)

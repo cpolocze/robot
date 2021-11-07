@@ -1,11 +1,8 @@
 package com.msd.robot.application
 
-import com.msd.application.ClientException
 import com.msd.application.GameMapService
 import com.msd.command.MovementCommand
 import com.msd.command.RegenCommand
-import com.msd.robot.domain.NotEnoughEnergyException
-import com.msd.robot.domain.PlanetBlockedException
 import com.msd.robot.domain.RobotRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -28,35 +25,16 @@ class RobotApplicationService(
         val robotId = moveCommand.robotId
         val playerId = moveCommand.playerUUID
 
-        val robot = robotRepo.findByIdOrNull(robotId) ?: run {
-            // TODO throw failure Event
-            return
-        }
+        val robot =
+            robotRepo.findByIdOrNull(robotId) ?: throw RobotNotFoundException("Can't find robot with id $robotId")
 
-        if (robot.player != playerId) {
-            // TODO throw failure event
-            return
-        }
-        try {
-            val planetDto =
-                gameMapService.retrieveTargetPlanetIfRobotCanReach(robot.planet.planetId, moveCommand.targetPlanetUUID)
-            val cost = planetDto.movementCost
-            val planet = planetDto.toPlanet()
-            robot.move(planet, cost)
-        } catch (ime: TargetPlanetNotReachableException) {
-            // TODO
-            // throw failure Event
-        } catch (cie: ClientException) {
-            // TODO
-            // throw failure Event
-        } catch (pbe: PlanetBlockedException) {
-            // TODO
-            // throw failure event
-        } catch (noe: NotEnoughEnergyException) {
-            // TODO
-        }
-        // TODO
-        // throw successful execution event
+        if (robot.player != playerId) throw InvalidPlayerException("Specified player doesn't match player specified in robot")
+        val planetDto =
+            gameMapService.retrieveTargetPlanetIfRobotCanReach(robot.planet.planetId, moveCommand.targetPlanetUUID)
+        val cost = planetDto.movementCost
+        val planet = planetDto.toPlanet()
+        robot.move(planet, cost)
+        robotRepo.save(robot)
     }
 
     fun regenerateEnergy(regenCommand: RegenCommand) {
