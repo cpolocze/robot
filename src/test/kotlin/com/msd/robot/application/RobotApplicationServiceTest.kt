@@ -6,12 +6,15 @@ import com.msd.application.GameMapService
 import com.msd.command.MovementCommand
 import com.msd.planet.domain.Planet
 import com.msd.planet.domain.PlanetType
+import com.msd.robot.domain.NotEnoughEnergyException
+import com.msd.robot.domain.PlanetBlockedException
 import com.msd.robot.domain.Robot
 import com.msd.robot.domain.RobotRepository
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -59,11 +62,8 @@ class RobotApplicationServiceTest {
         // given
         val command = MovementCommand(unknownRobotId, player1, planet1.planetId)
         every { robotRepository.findByIdOrNull(unknownRobotId) } returns null
-        // when
-        assertThrows<RobotNotFoundException> { robotApplicationService.move(command) }
-
         // then
-        // TODO check if event got thrown
+        assertThrows<RobotNotFoundException> { robotApplicationService.move(command) }
     }
 
     @Test
@@ -73,10 +73,8 @@ class RobotApplicationServiceTest {
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
         // when
         assertThrows<InvalidPlayerException> { robotApplicationService.move(command) }
-
         // then
         assertEquals(planet1, robot1.planet)
-        // TODO check if event got thrown
     }
 
     @Test
@@ -84,14 +82,20 @@ class RobotApplicationServiceTest {
         // given
         val command = MovementCommand(robot1.id, robot1.player, planet2.planetId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
-        every { gameMapMockService.retrieveTargetPlanetIfRobotCanReach(any(), any()) } throws TargetPlanetNotReachableException("")
+        every {
+            gameMapMockService.retrieveTargetPlanetIfRobotCanReach(
+                any(),
+                any()
+            )
+        } throws TargetPlanetNotReachableException("")
 
         // when
-        robotApplicationService.move(command)
+        assertThrows<TargetPlanetNotReachableException> {
+            robotApplicationService.move(command)
+        }
 
         // then
         assertEquals(planet1, robot1.planet)
-        // TODO check if event got thrown
     }
 
     @Test
@@ -102,34 +106,37 @@ class RobotApplicationServiceTest {
         every { gameMapMockService.retrieveTargetPlanetIfRobotCanReach(any(), any()) } throws ClientException("")
 
         // when
-        robotApplicationService.move(command)
+        assertThrows<ClientException> {
+            robotApplicationService.move(command)
+        }
 
         // then
         assertEquals(planet1, robot1.planet)
-        // TODO check if event got thrown
     }
 
     @Test
     fun `Robot has not enough energy so can't move`() {
         // given
-        while (robot1.energy > 4) // blocking on Level 0 costs 4 energy
+        while (robot1.energy >= 4) // blocking on Level 0 costs 4 energy
             robot1.block()
-
+        planet1.blocked = false
         val command = MovementCommand(robot1.id, robot1.player, planet2.planetId)
         val planetDto = GameMapPlanetDto(planet2.planetId, 3, planet2.type, planet2.playerId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+        every { robotRepository.save(any()) } returns robot1
         every { gameMapMockService.retrieveTargetPlanetIfRobotCanReach(any(), any()) } returns planetDto
 
         // when
-        robotApplicationService.move(command)
+        assertThrows<NotEnoughEnergyException> {
+            robotApplicationService.move(command)
+        }
 
         // then
         assertEquals(planet1, robot1.planet)
-        // TODO check if event got thrown
     }
 
     @Test
-    fun `Robot tries to move out of a blocked planet`() {
+    fun `Robot can't move out of a blocked planet`() {
         // given
         robot1.block()
 
@@ -139,7 +146,9 @@ class RobotApplicationServiceTest {
         every { gameMapMockService.retrieveTargetPlanetIfRobotCanReach(any(), any()) } returns planetDto
 
         // when
-        robotApplicationService.move(command)
+        assertThrows<PlanetBlockedException> {
+            robotApplicationService.move(command)
+        }
 
         // then
         assertEquals(planet1, robot3.planet)
@@ -151,6 +160,7 @@ class RobotApplicationServiceTest {
         val command = MovementCommand(robot1.id, robot1.player, planet2.planetId)
         val planetDto = GameMapPlanetDto(planet2.planetId, 3, planet2.type, planet2.playerId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+        every { robotRepository.save(any()) } returns robot1
         every { gameMapMockService.retrieveTargetPlanetIfRobotCanReach(any(), any()) } returns planetDto
 
         // when
@@ -158,6 +168,6 @@ class RobotApplicationServiceTest {
 
         // then
         assertEquals(planet2, robot1.planet)
-        // TODO check if event got thrown
+        verify(exactly = 1) { robotRepository.save(robot1) }
     }
 }
