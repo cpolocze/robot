@@ -1,14 +1,12 @@
-package com.msd.robot.application
+package com.msd.application
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.msd.application.ClientException
-import com.msd.application.GameMapPlanetDto
-import com.msd.application.GameMapService
 import com.msd.planet.domain.PlanetType
-import junit.framework.Assert.assertEquals
+import com.msd.robot.application.TargetPlanetNotReachableException
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -77,8 +75,10 @@ class GameMapServiceTest {
         val exception = assertThrows<ClientException> {
             gameMapService.retrieveTargetPlanetIfRobotCanReach(randomUUID(), randomUUID())
         }
-        assertEquals("GameMap Client returned internal error when retrieving targetPlanet for movement",
-                                exception.message)
+        assertEquals(
+            "GameMap Client returned internal error when retrieving targetPlanet for movement",
+            exception.message
+        )
     }
 
     @Test

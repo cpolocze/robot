@@ -3,6 +3,7 @@ package com.msd.robot.application
 import com.msd.application.GameMapService
 import com.msd.command.BlockCommand
 import com.msd.command.MovementCommand
+import com.msd.command.RegenCommand
 import com.msd.robot.domain.Robot
 import com.msd.robot.domain.RobotDomainService
 import org.springframework.stereotype.Service
@@ -48,6 +49,22 @@ class RobotApplicationService(
         val robot = robotDomainService.getRobot(blockCommand.robotId)
         robotDomainService.doesRobotBelongsToPlayer(robot, blockCommand.playerUUID)
         robot.block()
+        robotDomainService.saveRobot(robot)
+    }
+
+    /**
+     * Regenerates the `energy` of a user specified in [regenCommand]. If the specified [Robot] can not be found or the
+     * players don't match an exception is thrown.
+     *
+     * @param regenCommand             a [RegenCommand] in which the robot which should regenerate its `energy` and its Player is specified
+     * @throws RobotNotFoundException  When a `Robot` with the specified ID can't be found
+     * @throws InvalidPlayerException  When the specified `Player` and the `Player` specified in the `Robot` don't match
+     */
+    fun regenerateEnergy(regenCommand: RegenCommand) {
+        val robot = robotDomainService.getRobot(regenCommand.robotId)
+
+        robotDomainService.doesRobotBelongsToPlayer(robot, regenCommand.playerId)
+        robot.regenerateEnergy()
         robotDomainService.saveRobot(robot)
     }
 }

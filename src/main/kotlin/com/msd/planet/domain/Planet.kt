@@ -1,7 +1,6 @@
 package com.msd.planet.domain
 
 import java.util.*
-import javax.persistence.Embeddable
 import javax.persistence.Entity
 import javax.persistence.Id
 

@@ -5,12 +5,10 @@ import com.msd.application.GameMapPlanetDto
 import com.msd.application.GameMapService
 import com.msd.command.BlockCommand
 import com.msd.command.MovementCommand
+import com.msd.command.RegenCommand
 import com.msd.planet.domain.Planet
 import com.msd.planet.domain.PlanetType
-import com.msd.robot.domain.NotEnoughEnergyException
-import com.msd.robot.domain.PlanetBlockedException
-import com.msd.robot.domain.Robot
-import com.msd.robot.domain.RobotRepository
+import com.msd.robot.domain.*
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -41,13 +39,15 @@ class RobotApplicationServiceTest {
     @MockK
     lateinit var gameMapMockService: GameMapService
     lateinit var robotApplicationService: RobotApplicationService
+    lateinit var robotDomainService: RobotDomainService
 
     val player1: UUID = UUID.randomUUID()
 
     @BeforeEach
     fun setup() {
         MockKAnnotations.init(this)
-        robotApplicationService = RobotApplicationService(robotRepository, gameMapMockService)
+        robotDomainService = RobotDomainService(robotRepository)
+        robotApplicationService = RobotApplicationService(gameMapMockService, robotDomainService)
 
         planet1 = Planet(UUID.randomUUID(), PlanetType.SPACE_STATION, null)
         planet2 = Planet(UUID.randomUUID(), PlanetType.STANDARD, null)
@@ -59,7 +59,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Movement command specifies unknown robotId`() {
+    fun `Robot doesn't move if it is unknown`() {
         // given
         val command = MovementCommand(unknownRobotId, player1, planet1.planetId)
         every { robotRepository.findByIdOrNull(unknownRobotId) } returns null
@@ -68,7 +68,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Movement command specifies different player than robot owner`() {
+    fun `Robot doesn't move if players don't match`() {
         // given
         val command = MovementCommand(robot1.id, robot2.player, planet2.planetId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
@@ -100,7 +100,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `GameMap service is not available, so robot shouldn't move`() {
+    fun `Robot doesn't move when GameMap MicroService is not reachable`() {
         // given
         val command = MovementCommand(robot1.id, robot1.player, planet2.planetId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
@@ -116,7 +116,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Robot has not enough energy so can't move`() {
+    fun `Robot can't move if it has not enough energy`() {
         // given
         while (robot1.energy >= 4) // blocking on Level 0 costs 4 energy
             robot1.block()
@@ -168,6 +168,43 @@ class RobotApplicationServiceTest {
 
         // then
         assertEquals(planet2, robot1.planet)
+        verify(exactly = 1) { robotRepository.save(robot1) }
+    }
+
+    @Test
+    fun `Unknown robotId when regenerating causes an exception to be thrown`() {
+        // given
+        every { robotRepository.findByIdOrNull(unknownRobotId) } returns null
+        // then
+        assertThrows<RobotNotFoundException> {
+            robotApplicationService.regenerateEnergy(RegenCommand(unknownRobotId, UUID.randomUUID()))
+        }
+    }
+
+    @Test
+    fun `playerId not matching ownerId when regenerating causes an exception to be thrown`() {
+        // given
+        robot1.move(Planet(UUID.randomUUID()), 10)
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+
+        // then
+        assertThrows<InvalidPlayerException> {
+            robotApplicationService.regenerateEnergy(RegenCommand(robot1.id, UUID.randomUUID()))
+        }
+        assertEquals(10, robot1.energy)
+    }
+
+    @Test
+    fun `Robot energy increases when regenerating`() {
+        // given
+        robot1.move(Planet(UUID.randomUUID()), 6)
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+        every { robotRepository.save(robot1) } returns robot1
+        // when
+        robotApplicationService.regenerateEnergy(RegenCommand(robot1.id, robot1.player))
+
+        // then
+        assertEquals(18, robot1.energy)
         verify(exactly = 1) { robotRepository.save(robot1) }
     }
 
