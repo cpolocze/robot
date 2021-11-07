@@ -181,6 +181,9 @@ class Robot(
         return damageLevel + energyLevel + energyRegenLevel + healthLevel + inventory.storageLevel + miningSpeedLevel + miningLevel
     }
 
+    /**
+     * Regenerates this [Robot's] [Robot] `energy`. Energy Regeneration is doubled when the Robot is in the [Player's][Player] spawn
+     */
     fun regenerateEnergy() {
         energy += if (planet.type == PlanetType.SPAWN) {
             energyRegen * 2

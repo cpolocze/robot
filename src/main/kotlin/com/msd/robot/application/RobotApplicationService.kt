@@ -37,15 +37,18 @@ class RobotApplicationService(
         robotRepo.save(robot)
     }
 
+    /**
+     * Regenerates the `energy` of a user specified in [regenCommand]. If the specified [Robot] can not be found or the
+     * players don't match an exception is thrown.
+     *
+     * @param regenCommand            a [RegenCommand] in which the robot which should regenerate its `energy` and its Player is specified
+     * @throws RobotNotFoundException  When a `Robot` with the specified ID can't be found
+     * @throws InvalidPlayerException  When the specified `Player` and the `Player` specified in the `Robot` don't match
+     */
     fun regenerateEnergy(regenCommand: RegenCommand) {
-        val robot = robotRepo.findByIdOrNull(regenCommand.robotId) ?: run {
-            // TODO throw event
-            throw RobotNotFoundException("No robot with ${regenCommand.robotId} was found")
-        }
-        if (robot.player != regenCommand.playerId) {
-            // TODO throw event
-            throw InvalidPlayerException("The specified playerId and the robot playerId don't match")
-        }
+        val robot = robotRepo.findByIdOrNull(regenCommand.robotId) ?: throw RobotNotFoundException("No robot with ${regenCommand.robotId} was found")
+
+        if (robot.player != regenCommand.playerId) throw InvalidPlayerException("The specified playerId and the robot playerId don't match")
         robot.regenerateEnergy()
         robotRepo.save(robot)
     }
