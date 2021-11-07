@@ -8,10 +8,7 @@ import com.msd.command.MovementCommand
 import com.msd.command.RegenCommand
 import com.msd.planet.domain.Planet
 import com.msd.planet.domain.PlanetType
-import com.msd.robot.domain.NotEnoughEnergyException
-import com.msd.robot.domain.PlanetBlockedException
-import com.msd.robot.domain.Robot
-import com.msd.robot.domain.RobotRepository
+import com.msd.robot.domain.*
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -42,13 +39,15 @@ class RobotApplicationServiceTest {
     @MockK
     lateinit var gameMapMockService: GameMapService
     lateinit var robotApplicationService: RobotApplicationService
+    lateinit var robotDomainService: RobotDomainService
 
     val player1: UUID = UUID.randomUUID()
 
     @BeforeEach
     fun setup() {
         MockKAnnotations.init(this)
-        robotApplicationService = RobotApplicationService(robotRepository, gameMapMockService)
+        robotDomainService = RobotDomainService(robotRepository)
+        robotApplicationService = RobotApplicationService(gameMapMockService, robotDomainService)
 
         planet1 = Planet(UUID.randomUUID(), PlanetType.SPACE_STATION, null)
         planet2 = Planet(UUID.randomUUID(), PlanetType.STANDARD, null)
