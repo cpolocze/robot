@@ -59,7 +59,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Movement command specifies unknown robotId`() {
+    fun `Robot doesn't move if it is unknown`() {
         // given
         val command = MovementCommand(unknownRobotId, player1, planet1.planetId)
         every { robotRepository.findByIdOrNull(unknownRobotId) } returns null
@@ -68,7 +68,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Movement command specifies different player than robot owner`() {
+    fun `Robot doesn't move if players don't`() {
         // given
         val command = MovementCommand(robot1.id, robot2.player, planet2.planetId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
@@ -100,7 +100,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `GameMap service is not available, so robot shouldn't move`() {
+    fun `Robot doesn't move when GameMap MicroService is not reachable`() {
         // given
         val command = MovementCommand(robot1.id, robot1.player, planet2.planetId)
         every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
@@ -116,7 +116,7 @@ class RobotApplicationServiceTest {
     }
 
     @Test
-    fun `Robot has not enough energy so can't move`() {
+    fun `Robot can't move if it has not enough energy`() {
         // given
         while (robot1.energy >= 4) // blocking on Level 0 costs 4 energy
             robot1.block()
@@ -174,42 +174,36 @@ class RobotApplicationServiceTest {
     @Test
     fun `Unknown robotId when regenerating causes an exception to be thrown`() {
         // given
-        robot1.move(Planet(UUID.randomUUID()), 10)
-
-        // when
-        assertThrows<RobotNotFoundException> {
-            robotApplicationService.regenerateEnergy(RegenCommand(UUID.randomUUID(), UUID.randomUUID()))
-        }
-
+        every { robotRepository.findByIdOrNull(unknownRobotId) } returns null
         // then
-        assertEquals(10, robot1.energy)
-        // TODO check if event got thrown
+        assertThrows<RobotNotFoundException> {
+            robotApplicationService.regenerateEnergy(RegenCommand(unknownRobotId, UUID.randomUUID()))
+        }
     }
 
     @Test
     fun `playerId not matching ownerId when regenerating causes an exception to be thrown`() {
         // given
         robot1.move(Planet(UUID.randomUUID()), 10)
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
 
-        // when
+        // then
         assertThrows<InvalidPlayerException> {
             robotApplicationService.regenerateEnergy(RegenCommand(robot1.id, UUID.randomUUID()))
         }
-
-        // then
-        assertEquals(10, robot1.energy)
-        // TODO check if event got thrown
     }
 
     @Test
     fun `Robot energy increases when regenerating`() {
         // given
         robot1.move(Planet(UUID.randomUUID()), 6)
+        every { robotRepository.findByIdOrNull(robot1.id) } returns robot1
+        every { robotRepository.save(robot1) } returns robot1
         // when
         robotApplicationService.regenerateEnergy(RegenCommand(robot1.id, robot1.player))
 
         // then
         assertEquals(18, robot1.energy)
-        // TODO check if success event got thrown
+        verify(exactly = 1) { robotRepository.save(robot1) }
     }
 }
